@@ -6,7 +6,7 @@ const hold = require('hold-it');
 const expect = require('chai').expect;
 
 const misc = require('@akshendra/misc');
-const { Edmodo } = require('../src/index.j');
+const { Edmodo } = require('../src/index.js');
 
 const client_id = process.env.EDMODO_ID;
 const client_secret = process.env.EDMODO_SECRET;
