@@ -1,0 +1,35 @@
+{
+  "name": "@akshendra/lms",
+  "version": "0.0.1",
+  "description": "Some LMS apis",
+  "main": "src/index.js",
+  "scripts": {
+    "test:gcl": "mocha --no-timeouts --bail test/gcl.spec.js",
+    "test:edmodo": "mocha --no-timeouts --bail test/edmodo.spec.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akshendra/lms-wrapper.git"
+  },
+  "keywords": [
+    "lms",
+    "js"
+  ],
+  "author": "Akshendra Pratap Singh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/akshendra/lms-wrapper/issues"
+  },
+  "homepage": "https://github.com/akshendra/lms-wrapper#readme",
+  "dependencies": {
+    "@akshendra/misc": "github:akshendra/utils#0.0.2",
+    "@akshendra/service": "github:akshendra/service-base#0.0.2",
+    "@akshendra/validator": "github:akshendra/validator#0.0.2",
+    "axios": "^0.18.0",
+    "googleapis": "^27.0.0"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "hold-it": "^1.0.1"
+  }
+}
