@@ -1,29 +1,25 @@
-/* eslint camelcase: 0 */
-
-const misc = require('@akshendra/misc');
-const Service = require('@akshendra/service');
-const { validate, joi } = require('@akshendra/validator');
 
 const QError = require('./error');
 const oauth2 = require('./oauth2');
+const { addSeconds } = require('./helpers/utils');
 
 
 function makeName(title, first, last) {
   return [title, first, last].filter(a => a).join(' ');
 }
 
+function assign(obj, upd = {}) {
+  return Object.assign({}, obj, upd);
+}
+
 /**
  * @class  Edmodo
  */
-class Edmodo extends Service {
+class Edmodo {
   constructor(name, emitter, opts, urls = {}, fxs = {}) {
-    super(name, emitter, opts);
-    const options = validate(opts, joi.object().keys({
-      client_id: joi.string().required(),
-      client_secret: joi.string().required(),
-      redirect_uri: joi.string().required(),
-      scope: joi.array().required(), // with stringify if required, space delimted
-    }));
+    this.name = name;
+    this.emitter = emitter;
+    const options = Object.assign({}, opts);
 
     Object.assign(this, options);
 
@@ -40,7 +36,7 @@ class Edmodo extends Service {
    */
   getAutorizationURL(extras) {
     const path = 'oauth/authorize';
-    return oauth2.makeURL(this.apiURL, path, misc.assign({
+    return oauth2.makeURL(this.apiURL, path, assign({
       client_id: this.client_id,
       redirect_uri: this.redirect_uri,
       scope: this.scope,
@@ -55,8 +51,7 @@ class Edmodo extends Service {
    * @return {Object} token
    * @return {String} token.access_token
    */
-  getToken(c) {
-    const code = validate(c, joi.string().required());
+  getToken(code) {
     const path = 'oauth/token';
 
     const request = {
@@ -78,8 +73,7 @@ class Edmodo extends Service {
     });
   }
 
-  refreshToken(token) {
-    const refresh_token = validate(token, joi.string().required());
+  refreshToken(refresh_token) {
     const path = 'oauth/token';
 
     const request = {
@@ -103,7 +97,7 @@ class Edmodo extends Service {
 
   makeHeaders(userId) { // eslint-disable-line
     return this.getUserToken(userId).then(tokens => {
-      const accessToken = validate(tokens.access_token, joi.string().required());
+      const accessToken = tokens.access_token;
       return {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -114,7 +108,7 @@ class Edmodo extends Service {
   }
 
   headersWithToken(tokens) { // eslint-disable-line
-    const accessToken = validate(tokens.access_token, joi.string().required());
+    const accessToken = tokens.access_token;
     return {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -222,28 +216,13 @@ class Edmodo extends Service {
 
   createAssignment(userId, data) {
     const path = 'assignments';
-    validate(data, {
-      courseId: joi.number().required(),
-      title: joi.string().required(),
-      description: joi.string().default(''),
-      link: joi.object().keys({
-        url: joi.string().uri().required(),
-        title: joi.string().required(),
-        thumbnailUrl: joi.string()
-      }),
-      game: joi.object().keys({
-        name: joi.string().required(),
-        expiry: joi.number().required(),
-        createdAt: joi.date().required()
-      }),
-    });
 
     const request = {
       title: data.title,
       description: data.description, // optional
-      due_at: new Date(misc.addSeconds(data.game.createdAt, data.game.expiry)),
+      due_at: new Date(addSeconds(data.game.createdAt, data.game.expiry)),
       recipients: {
-        groups: [{ id: data.courseId }]
+        groups: [{ id: data.courseId }],
       }, // recipeints object
       lock_after_due: false, // false, here for cleanup cases
       attachments: {
@@ -264,15 +243,6 @@ class Edmodo extends Service {
 
   submit(userId, data) {
     const path = 'assignment_submissions';
-    validate(data, {
-      assignmentId: joi.string().required(),
-      content: joi.string().required(),
-      link: joi.object().keys({
-        url: joi.string().uri().required(),
-        title: joi.string().required(),
-        thumbnailUrl: joi.string()
-      }),
-    });
 
     const request = {
       assignment_id: data.assignmentId,
@@ -294,12 +264,6 @@ class Edmodo extends Service {
 
   grade(userId, data) {
     const path = 'grades';
-
-    validate(data, {
-      submitterId: joi.number().required(),
-      assignmentId: joi.number().required(),
-      score: joi.number().required(),
-    });
 
     const request = {
       submitter_id: data.submitterId, // student id

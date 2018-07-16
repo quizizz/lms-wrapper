@@ -1,6 +1,6 @@
 {
   "name": "@akshendra/lms",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Some LMS apis",
   "main": "src/index.js",
   "scripts": {
@@ -22,14 +22,12 @@
   },
   "homepage": "https://github.com/akshendra/lms-wrapper#readme",
   "dependencies": {
-    "@akshendra/misc": "github:akshendra/utils#0.0.2",
-    "@akshendra/service": "github:akshendra/service-base#0.0.2",
-    "@akshendra/validator": "github:akshendra/validator#0.0.2",
-    "axios": "^0.18.0",
-    "googleapis": "^27.0.0"
+    "axios": "0.18.0",
+    "googleapis": "27.0.0",
+    "moment": "2.22.2"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
+    "chai": "4.1.2",
     "hold-it": "^1.0.1"
   }
 }

@@ -5,7 +5,6 @@ const EventEmitter = require('events').EventEmitter;
 const hold = require('hold-it');
 const expect = require('chai').expect;
 
-const misc = require('@akshendra/misc');
 const { Edmodo } = require('../src/index.js');
 
 const client_id = process.env.EDMODO_ID;
@@ -20,7 +19,7 @@ hold.add('tokens.student', {
   access_token: process.env.EDMODO_STUDENT_ACCESS,
   token_type: 'bearer',
   expires_in: 86400,
-  lastRefresh: '2017-10-11T11:37:20.325Z',
+  lastRefresh: '2018-07-16T13:59:30.524Z',
 });
 
 hold.add('tokens.teacher', {
@@ -37,7 +36,7 @@ describe('Edmodo', () => {
       client_id,
       client_secret,
       redirect_uri: 'https://google.com/lms/edmodo/callback',
-      scope: ['all']
+      scope: ['all'],
     };
     const teacher = new Edmodo('teacher', emitter, opts, {}, {
       getToken: () => Promise.resolve(hold.get('tokens.teacher')),
@@ -75,7 +74,7 @@ describe('Edmodo', () => {
       game: {
         name: 'This is a game',
         expiry: 3600,
-        createdAt: misc.getIsoTime(),
+        createdAt: new Date(),
       },
     };
 

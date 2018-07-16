@@ -4,8 +4,6 @@ const EventEmitter = require('events').EventEmitter;
 
 const hold = require('hold-it');
 const expect = require('chai').expect;
-
-const misc = require('@akshendra/misc');
 const { GCL } = require('../src/index');
 
 const client_id = process.env.GCL_ID;
@@ -23,11 +21,11 @@ hold.add('tokens.student', {
   access_token: process.env.GCL_STUDENT_ACCESS,
   token_type: 'Bearer',
   expires_in: null,
-  lastRefresh: null,
+  lastRefresh: '2018-07-16T13:50:44.171Z',
 });
 
 hold.add('tokens.teacher', {
-  lastRefresh: null,
+  lastRefresh: '2018-07-16T13:50:59.418Z',
   expires_in: null,
   token_type: 'Bearer',
   access_token: process.env.GCL_TEACHER_ACCESS,
@@ -88,7 +86,7 @@ describe('GCL', () => {
       game: {
         name: 'Ma name s Jeff',
         expiry: 3600,
-        createdAt: misc.getIsoTime(),
+        createdAt: new Date(),
       },
     };
 
@@ -189,7 +187,7 @@ describe('GCL', () => {
     const submission = hold.get('submission');
     const teacher = hold.get('teacher');
 
-    const newSub = misc.updateObject(submission, {
+    const newSub = Object.assign({}, submission, {
       assignedGrade: 50,
       draftGrade: 50,
     });

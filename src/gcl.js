@@ -1,20 +1,18 @@
 /* eslint camelcase: 0 */
 
-/**
- * Handle google classroom
- */
-
+const moment = require('moment');
 const { google } = require('googleapis');
-const Service = require('@akshendra/service');
-const { validate, joi } = require('@akshendra/validator');
-const { assign, addSeconds, moment } = require('@akshendra/misc');
-
 const LMSError = require('./error');
 const oauth2 = require('./oauth2');
+const { addSeconds } = require('./helpers/utils');
 
 const { OAuth2 } = google.auth;
 const classroom = google.classroom('v1');
 const tokenClient = google.oauth2('v2');
+
+function assign(obj, upd = {}) {
+  return Object.assign({}, obj, upd);
+}
 
 function getGCLDate(time) {
   const mtime = moment(time);
@@ -54,17 +52,12 @@ function checkSubmissions(submissions, info) {
 /**
  * @class GCL
  */
-class GCL extends Service {
+class GCL {
   constructor(name, emitter, opts, urls = {}, fxs = {}) {
-    super(name, emitter, opts);
+    this.name = name;
+    this.emitter = emitter;
 
-    const options = validate(opts, joi.object().keys({
-      client_id: joi.string().required(),
-      client_secret: joi.string().required(),
-      redirect_uri: joi.string().required(),
-      scope: joi.array().required(), // with stringify if required, space delimted
-    }));
-
+    const options = Object.assign({}, opts);
     Object.assign(this, options);
 
     const { apiURL, authURL, tokenURL } = urls;
@@ -154,9 +147,7 @@ class GCL extends Service {
    * @return {Object} token
    * @return {String} token.access_token
    */
-  getToken(c) {
-    const code = validate(c, joi.string().required());
-
+  getToken(code) {
     return promiseMe(this.authClient.getToken.bind(this.authClient))(code).then(tokens => {
       return {
         access_token: tokens.access_token,
@@ -188,7 +179,7 @@ class GCL extends Service {
   }
 
   headersWithToken(tokens) { // eslint-disable-line
-    const accessToken = validate(tokens.access_token, joi.string().required());
+    const accessToken = tokens.access_token;
     return {
       Authorization: `Bearer ${accessToken}`,
     };
@@ -201,12 +192,7 @@ class GCL extends Service {
     });
   }
 
-  getCourses(userId, data = {}) {
-    validate(data, joi.object().keys({
-      pageSize: joi.number(),
-      pageToken: joi.string()
-    }));
-
+  getCourses(userId) {
     const request = {
       courseStates: 'ACTIVE',
       teacherId: 'me',
@@ -216,25 +202,7 @@ class GCL extends Service {
     });
   }
 
-  createAssignment(userId, d) {
-    const data = validate(d, joi.object().keys({
-      courseId: joi.string().required(),
-      title: joi.string().required(),
-      description: joi.string().default(''),
-      link: joi.object().keys({
-        url: joi.string().uri().required(),
-        title: joi.string().required(),
-        thumbnailUrl: joi.string()
-      }),
-      game: joi.object().keys({
-        name: joi.string().required(),
-        expiry: joi.number().required(),
-        createdAt: joi.date().required()
-      }),
-      maxPoints: joi.number().default(100),
-      startDate: joi.date()
-    }));
-
+  createAssignment(userId, data) {
     const dueTS = addSeconds(data.game.createdAt, data.game.expiry);
 
     const request = {
@@ -244,8 +212,8 @@ class GCL extends Service {
         description: data.description,
         materials: [
           {
-            link: data.link
-          }
+            link: data.link,
+          },
         ],
         state: 'PUBLISHED',
         dueDate: getGCLDate(dueTS),
@@ -258,7 +226,7 @@ class GCL extends Service {
     if (data.startDate) {
       Object.assign(request.resource, {
         scheduledTime: data.startDate,
-        state: 'DRAFT'
+        state: 'DRAFT',
       });
     }
 
