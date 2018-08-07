@@ -187,9 +187,8 @@ class GCL {
 
   getProfile(tokens) {
     const url = 'https://www.googleapis.com';
-    return this.headersWithToken(tokens).then(headers => {
-      return oauth2.get(url, 'userinfo/v2/me', {}, headers);
-    });
+    const headers = this.headersWithToken(tokens);
+    return oauth2.get(url, 'userinfo/v2/me', {}, headers);
   }
 
   getCourses(userId) {
