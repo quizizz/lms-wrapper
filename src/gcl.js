@@ -147,7 +147,7 @@ class GCL {
    * @return {Object} token
    * @return {String} token.access_token
    */
-  getToken(code) {
+  getTokens(code) {
     return promiseMe(this.authClient.getToken.bind(this.authClient))(code).then(tokens => {
       return {
         access_token: tokens.access_token,
