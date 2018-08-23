@@ -51,7 +51,7 @@ class Edmodo {
    * @return {Object} token
    * @return {String} token.access_token
    */
-  getToken(code) {
+  getTokens(code) {
     const path = 'oauth/token';
 
     const request = {
