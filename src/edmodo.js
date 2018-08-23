@@ -168,40 +168,40 @@ class Edmodo {
 
   getProfile(tokens) {
     const path = 'users/me';
-    return this.headersWithToken(tokens).then(hant => {
-      return this.get(null, this.apiURL, path, {}, hant);
-    }).then(response => {
-      const { data } = response;
-      return {
-        url: data.url, // "http://localhost:3000/users/10",
-        id: data.id, // 10
-        type: data.type, // "teacher",
-        username: data.username, // "edna",
-        user_title: data.user_title, // "Ms",
-        first_name: data.first_name, // "Edna",
-        last_name: data.last_name, // "Krabappel",
-        name: makeName(data.user_title, data.first_name, data.last_name) || data.email,
-        locale: data.locale, // "en-GB",
-        timezone: data.timezone, // "America/New_York",
-        email: data.email || `${data.username}@edmodotemp.com`, // "edna@springfield.net",
-        avatars: {
-          small: data.avatars.small, // "https://u.ph.edim.co/default-avatars/10_t.jpg",
-          large: data.avatars.large, // "https://u.ph.edim.co/default-avatars/10.jpg"
-        },
-        // schoolId: data.school.id, // { url: "https://api.edmodo.com/schools/14", id: 14 },
-        // districtId: data.districtId, // { url: "https://api.edmodo.com/districts/12", id: 12 },
-        // school_admin_rights: {
-        //     institution: "school/1001",
-        //     can_grant_rights: true,
-        //     can_allocate_funds: true
-        // },
-        // district_admin_rights: {
-        //     institution: "district/90",
-        //     can_grant_rights: false,
-        //     can_allocate_funds: false
-        // }
-      };
-    });
+    const hant = this.headersWithToken(tokens);
+    return this.get(null, this.apiURL, path, {}, hant)
+      .then(response => {
+        const { data } = response;
+        return {
+          url: data.url, // "http://localhost:3000/users/10",
+          id: data.id, // 10
+          type: data.type, // "teacher",
+          username: data.username, // "edna",
+          user_title: data.user_title, // "Ms",
+          first_name: data.first_name, // "Edna",
+          last_name: data.last_name, // "Krabappel",
+          name: makeName(data.user_title, data.first_name, data.last_name) || data.email,
+          locale: data.locale, // "en-GB",
+          timezone: data.timezone, // "America/New_York",
+          email: data.email || `${data.username}@edmodotemp.com`, // "edna@springfield.net",
+          avatars: {
+            small: data.avatars.small, // "https://u.ph.edim.co/default-avatars/10_t.jpg",
+            large: data.avatars.large, // "https://u.ph.edim.co/default-avatars/10.jpg"
+          },
+          // schoolId: data.school.id, // { url: "https://api.edmodo.com/schools/14", id: 14 },
+          // districtId: data.districtId, // { url: "https://api.edmodo.com/districts/12", id: 12 },
+          // school_admin_rights: {
+          //     institution: "school/1001",
+          //     can_grant_rights: true,
+          //     can_allocate_funds: true
+          // },
+          // district_admin_rights: {
+          //     institution: "district/90",
+          //     can_grant_rights: false,
+          //     can_allocate_funds: false
+          // }
+        };
+      });
   }
 
   getGroups(userId) {
