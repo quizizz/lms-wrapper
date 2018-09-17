@@ -203,17 +203,16 @@ class GCL {
 
   createAssignment(userId, data) {
     const dueTS = addSeconds(data.game.createdAt, data.game.expiry);
+    const links = Array.isArray(data.link) ? data.link : [data.link];
 
     const request = {
       courseId: data.courseId,
       resource: {
         title: data.title,
         description: data.description,
-        materials: [
-          {
-            link: data.link,
-          },
-        ],
+        materials: links.map(link => ({
+          link,
+        })),
         state: 'PUBLISHED',
         dueDate: getGCLDate(dueTS),
         dueTime: getGCLTime(dueTS),
