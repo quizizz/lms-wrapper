@@ -207,8 +207,9 @@ class Edmodo {
   getGroups(userId) {
     const path = 'groups';
     return this.makeHeaders(userId).then(hant => {
-      return this.get(userId, this.apiURL, path, {}, hant);
+      return this.get(userId, this.apiURL, path, { per_page: 100 }, hant);
     }).then(response => {
+      console.log(response);
       const { data } = response;
       return data || [];
     });
