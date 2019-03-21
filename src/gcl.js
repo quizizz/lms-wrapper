@@ -231,6 +231,26 @@ class GCL {
     return this.makeRequest(userId, classroom.courses.courseWork.create, request);
   }
 
+  async _getCourseStudents(userId, { courseId, pageToken }) {
+    const api = classroom.courses.students.list;
+    const request = { courseId, pageToken, pageSize: 20 };
+    return this.makeRequest(userId, api, request);
+  };
+
+  async getCourseStudents(userId, { courseId }) {
+    const students = [];
+    let nextPageToken;
+    let count = 0;
+    do {
+      count += 1;
+      const response = await this._getCourseStudents(userId, { courseId, pageToken: nextPageToken });
+      nextPageToken = response.nextPageToken,
+      students.push(response.students);
+    } while (nextPageToken && count < 10);
+
+    return students;
+  }
+
   getStudentSubmission(userId, { courseId, courseWorkId }) {
     const info = { userId, courseId, courseWorkId };
     const api = classroom.courses.courseWork.studentSubmissions.list;
@@ -275,16 +295,35 @@ class GCL {
     });
   }
 
-  getAllSubmissions(userId, { courseId, courseWorkId }) {
+  _getAllSubmissions(userId, { courseId, courseWorkId, nextPage }) {
     const info = { userId, courseId, courseWorkId };
     const api = classroom.courses.courseWork.studentSubmissions.list;
     return this.makeRequest(userId, api, {
       courseId,
       courseWorkId,
+      nextPage,
+      pageSize: 20,
     }).then(response => {
       checkSubmissions(response.studentSubmissions, info);
-      return response.studentSubmissions;
+      return response;
     });
+  }
+
+  async getAllSubmissions(userId, { courseId, courseWorkId }) {
+    const submissions = [];
+    let count = 0;
+    let nextPageToken;
+    do {
+      const response = await this._getAllSubmissions(userId, {
+        courseId,
+        courseWorkId,
+        pageToken: nextPageToken,
+      });
+      nextPageToken = response.nextPageToken;
+      submissions.push(response.studentSubmissions);
+      count += 1;
+    } while (nextPageToken && count < 10);
+    return submissions;
   }
 
   gradeAssignment(userId, { courseId, courseWorkId, subId, newSub }) {
