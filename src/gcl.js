@@ -320,7 +320,7 @@ class GCL {
         pageToken: nextPageToken,
       });
       nextPageToken = response.nextPageToken;
-      submissions.push(response.studentSubmissions);
+      submissions.push(...response.studentSubmissions);
       count += 1;
     } while (nextPageToken && count < 10);
     return submissions;
