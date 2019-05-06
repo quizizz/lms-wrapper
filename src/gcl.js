@@ -259,7 +259,6 @@ class GCL {
       courseWorkId,
       userId: 'me',
     }).then(response => {
-      checkSubmissions(response.studentSubmissions, info);
       const submission = response.studentSubmissions[0];
       return submission;
     });
@@ -304,7 +303,6 @@ class GCL {
       nextPage,
       pageSize: 20,
     }).then(response => {
-      checkSubmissions(response.studentSubmissions, info);
       return response;
     });
   }
@@ -320,7 +318,7 @@ class GCL {
         pageToken: nextPageToken,
       });
       nextPageToken = response.nextPageToken;
-      submissions.push(...response.studentSubmissions);
+      submissions.push(...(response.studentSubmissions || []));
       count += 1;
     } while (nextPageToken && count < 10);
     return submissions;
