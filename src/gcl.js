@@ -231,6 +231,40 @@ class GCL {
     return this.makeRequest(userId, classroom.courses.courseWork.create, request);
   }
 
+  createIndividualAssignments(userId, data) {
+    const dueTS = addSeconds(data.game.createdAt, data.game.expiry);
+    const links = Array.isArray(data.link) ? data.link : [data.link];
+
+    const request = {
+      courseId: data.courseId,
+      resource: {
+        assigneeMode: 'INDIVIDUAL_STUDENTS',
+        title: data.title,
+        description: data.description,
+        materials: links.map(link => ({
+          link,
+        })),
+        state: 'PUBLISHED',
+        dueDate: getGCLDate(dueTS),
+        dueTime: getGCLTime(dueTS),
+        workType: 'ASSIGNMENT',
+        maxPoints: data.maxPoints,
+        individualStudentsOptions: {
+          studentIds: data.studentIds,
+        },
+      },
+    };
+
+    if (data.startDate) {
+      Object.assign(request.resource, {
+        scheduledTime: data.startDate,
+        state: 'DRAFT',
+      });
+    }
+
+    return this.makeRequest(userId, classroom.courses.courseWork.create, request);
+  }
+
   async _getCourseStudents(userId, { courseId, pageToken }) {
     const api = classroom.courses.students.list;
     const request = { courseId, pageToken, pageSize: 20 };
