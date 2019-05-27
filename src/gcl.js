@@ -354,7 +354,7 @@ class GCL {
       nextPageToken = response.nextPageToken;
       submissions.push(...(response.studentSubmissions || []));
       count += 1;
-    } while (nextPageToken && count < 10);
+    } while (nextPageToken && count < 50);
     return submissions;
   }
 
