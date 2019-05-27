@@ -328,13 +328,13 @@ class GCL {
     });
   }
 
-  _getAllSubmissions(userId, { courseId, courseWorkId, nextPage }) {
+  _getAllSubmissions(userId, { courseId, courseWorkId, pageToken }) {
     const info = { userId, courseId, courseWorkId };
     const api = classroom.courses.courseWork.studentSubmissions.list;
     return this.makeRequest(userId, api, {
       courseId,
       courseWorkId,
-      nextPage,
+      pageToken,
       pageSize: 20,
     }).then(response => {
       return response;
