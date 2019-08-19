@@ -1,4 +1,3 @@
-
 const EventEmitter = require('events').EventEmitter;
 
 const hold = require('hold-it');
@@ -56,59 +55,5 @@ describe('GCL', () => {
     expect(courses).to.have.length(7);
     const course = courses.filter(c => c.name === 'Test Class')[0];
     hold.add('course', course);
-  });
-
-  it.skip('should create assignment', async () => {
-    const course = hold.get('course');
-    const teacher = hold.get('teacher');
-
-    const request = {
-      courseId: course.id,
-      title: 'Testing',
-      description: '1, 2 ,3',
-      link: {
-        url: 'https://google.com',
-        title: 'Google',
-      },
-      game: {
-        name: 'Ma name s Jeff',
-        expiry: 3600,
-        createdAt: new Date(),
-      },
-    };
-
-    const assignment = await teacher.createAssignment('teacher', request);
-    expect(assignment.courseId).to.equal(course.id);
-    hold.add('assignment', assignment);
-  });
-
-  it.skip('should get all submissions', async function () {
-    const assignment = hold.get('assignment');
-    const teacher = hold.get('teacher');
-
-    const request = {
-      courseId: assignment.courseId,
-      courseWorkId: assignment.id,
-    };
-
-    const submissions = await teacher.getAllSubmissions('teacher', request);
-    expect(submissions).to.have.length(1);
-  });
-
-  it('should make an announcement', async function () {
-    const course = hold.get('course');
-    const teacher = hold.get('teacher');
-
-    const request = {
-      courseId: course.id,
-      text: 'This is a test announcement',
-      links: [{
-        url: 'https://google.com',
-        title: 'Google',
-      }],
-    };
-
-    const assignment = await teacher.announce('teacher', request);
-    expect(assignment.courseId).to.equal(course.id);
   });
 });

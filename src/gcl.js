@@ -231,6 +231,22 @@ class GCL {
     return this.makeRequest(userId, classroom.courses.courseWork.create, request);
   }
 
+
+  announce(userId, data) {
+    const params = {
+      courseId: data.courseId,
+      resource: {
+        text: data.text,
+        materials: data.links.map(link => ({
+          link,
+        })),
+        state: 'PUBLISHED',
+      },
+    };
+    return this.makeRequest(userId, classroom.courses.announcements.create, params);
+  }
+
+
   createIndividualAssignments(userId, data) {
     const dueTS = addSeconds(data.game.createdAt, data.game.expiry);
     const links = Array.isArray(data.link) ? data.link : [data.link];
