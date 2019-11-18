@@ -295,7 +295,7 @@ class GCL {
       count += 1;
       const response = await this._getCourseStudents(userId, { courseId, pageToken: nextPageToken });
       nextPageToken = response.nextPageToken,
-      students.push(response.students);
+      students.push(...(response.students || []));
     } while (nextPageToken && count < 10);
 
     return students;
