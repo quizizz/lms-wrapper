@@ -231,6 +231,30 @@ class GCL {
     return this.makeRequest(userId, classroom.courses.courseWork.create, request);
   }
 
+  getAssignment(userId, { courseId, courseWorkId }) {
+    const request = {
+      courseId,
+      id: courseWorkId,
+    };
+    return this.makeRequest(userId, classroom.courses.courseWork.get, request);
+  }
+
+  async restartAssignment(userId, data) {
+    const current = await this.getAssignment(userId, data);
+    const dueTS = addSeconds(data.game.createdAt, data.game.expiry);
+
+    current.dueDate = getGCLDate(dueTS);
+    current.dueTime = getGCLTime(dueTS);
+
+    const request = {
+      courseId: data.courseId,
+      id: data.courseWorkId,
+      updateMask: 'dueDate,dueTime',
+      resource: current,
+    };
+
+    return this.makeRequest(userId, classroom.courses.courseWork.patch, request);
+  }
 
   announce(userId, data) {
     const params = {
