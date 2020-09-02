@@ -23,7 +23,7 @@
   "homepage": "https://github.com/akshendra/lms-wrapper#readme",
   "dependencies": {
     "axios": "0.18.0",
-    "googleapis": "27.0.0",
+    "googleapis": "59.0.0",
     "moment": "2.22.2"
   },
   "devDependencies": {
