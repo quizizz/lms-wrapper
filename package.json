@@ -18,9 +18,9 @@
   "author": "Akshendra Pratap Singh",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/akshendra/lms-wrapper/issues"
+    "url": "https://github.com/quizizz/lms-wrapper/issues"
   },
-  "homepage": "https://github.com/akshendra/lms-wrapper#readme",
+  "homepage": "https://github.com/quizizz/lms-wrapper#readme",
   "dependencies": {
     "axios": "0.18.0",
     "googleapis": "27.0.0",
