@@ -22,9 +22,7 @@ class Canvas {
     this.clientSecret = clientSecret;
     this.postRefreshCallback = postRefreshCallback;
   }
-  async init() {
-    return this;
-  }
+
   url(path) {
     return `${this.hostedUrl}/${_.trim(path, '/')}`
   }

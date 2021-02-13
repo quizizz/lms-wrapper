@@ -1,4 +1,5 @@
 import GCL from './gcl';
 import LMSError from './error';
 import Edmodo from './edmodo';
-export { GCL, LMSError, Edmodo };
+import Canvas from './Canvas';
+export { GCL, LMSError, Edmodo, Canvas };

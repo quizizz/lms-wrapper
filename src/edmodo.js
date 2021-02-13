@@ -1,3 +1,4 @@
+/// <reference path='./edmodo.d.ts' />
 
 const QError = require('./error');
 const oauth2 = require('./oauth2');
@@ -34,7 +35,7 @@ class Edmodo {
    * redirect users, where they authorize our app
    * @return {String}
    */
-  getAutorizationURL(extras) {
+  getAuthorizationURL(extras) {
     const path = 'oauth/authorize';
     return oauth2.makeURL(this.apiURL, path, assign({
       client_id: this.client_id,
