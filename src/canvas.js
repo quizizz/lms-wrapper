@@ -1,9 +1,12 @@
-/// <reference path='./Canvas.d.ts' />
+/// <reference path='./canvas.d.ts' />
 
 const axios = require('axios');
 const _ = require('lodash');
 const LMSError = require('./error.js')
 
+/*
+ * @class Canvas
+ */
 class Canvas {
   constructor({
     orgName,
