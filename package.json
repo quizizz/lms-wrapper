@@ -1,5 +1,5 @@
 {
-  "name": "@akshendra/lms",
+  "name": "@quizizz/lms",
   "version": "0.2.0",
   "description": "Some LMS apis",
   "main": "src/index.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/akshendra/lms-wrapper.git"
+    "url": "git+https://github.com/quizizz/lms-wrapper.git"
   },
   "keywords": [
     "lms",
