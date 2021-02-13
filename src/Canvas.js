@@ -42,7 +42,7 @@ class Canvas {
       }
     });
     const { access_token: accessToken, refresh_token: refreshToken, user } = data;
-    await this.refreshCb({user, accessToken, refreshToken});
+    await this.postRefreshCallback({user, accessToken, refreshToken});
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
   }
@@ -52,7 +52,7 @@ class Canvas {
       const response = await axios({
           ...axiosRequestConfig,
           url: this.url(axiosRequestConfig.url),
-          headers: { Authorization: this.accessToken },
+          headers: { Authorization: `Bearer ${this.accessToken}` },
       });
       const { data, status } = response;
       return { data, status };
