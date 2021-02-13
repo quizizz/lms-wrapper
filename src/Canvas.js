@@ -1,3 +1,5 @@
+/// <reference path='./Canvas.d.ts' />
+
 const axios = require('axios');
 const _ = require('lodash');
 const LMSError = require('./error.js')
