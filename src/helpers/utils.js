@@ -1,4 +1,4 @@
-
+/// <reference path='./utils.d.ts' />
 const moment = require('moment');
 
 exports.addSeconds = (time, seconds) => {

@@ -1,4 +1,5 @@
 
+/// <reference path='./error.d.ts' />
 class LMSError extends Error {
   /**
    * @param {string} message

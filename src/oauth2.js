@@ -1,6 +1,4 @@
-/**
- * Calling oauth2 apis
- */
+/// <reference path='./oauth2.d.ts' />
 
 const axios = require('axios');
 const { URL, URLSearchParams } = require('url');
