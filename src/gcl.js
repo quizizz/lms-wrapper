@@ -56,7 +56,7 @@ class GCL {
   constructor(name, emitter, opts, urls = {}, fxs = {}) {
     this.name = name;
     this.emitter = emitter;
-
+    
     const options = Object.assign({}, opts);
     Object.assign(this, options);
 
