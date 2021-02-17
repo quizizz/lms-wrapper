@@ -190,7 +190,7 @@ class Canvas {
   /**
    * Refreshes the access_token for the given user
    */
-  async refreshUserToken(userId) {
+  async refreshUserToken() {
     try {
       const url = OAuth.makeURL(this.hostedUrl, '/login/oauth2/token');
       const resp = await axios({
@@ -210,13 +210,13 @@ class Canvas {
       this.accessToken = resp.data.access_token;
       this.refreshToken = resp.data.refresh_token;
 
-      await this.setUserToken(userId, {
+      await this.setUserToken(this.userId, {
         ...resp.data,
         lastRefresh: new Date(),
       });
     } catch (err) {
       throw new LMSError('Unable to refresh user token', 'canvas.REFRESH_TOKEN_ERROR', {
-        userId,
+        userId: this.userId,
         message: err.message,
       });
     }

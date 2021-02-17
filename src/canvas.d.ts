@@ -4,11 +4,6 @@ import OAuth from './oauth2';
 
 export = Canvas;
 
-interface CanvasOptions {
-  name: string;
-  emitter: EventEmitter;
-}
-
 interface TokenFunctions {
   getToken(userId: string): Promise<TokenResult>;
   setToken(userId: string, tokens: string[]): Promise<void>;
@@ -28,6 +23,7 @@ interface CanvasOptions {
   clientId: string;
   clientSecret: string;
   fxs: TokenFunctions
+  userId: string;
 };
 
 interface AuthURLOptions {
@@ -36,11 +32,12 @@ interface AuthURLOptions {
   scopes: string[];
 };
 
-interface GetTokensOptions {
-  code: string;
-  userId: string;
-  redirectUrl: string;
-};
+interface CanvasProfile {
+  id: string;
+  name: string;
+  primary_email: string;
+  locale: string;
+}
 
 declare class Canvas {
   constructor(options: CanvasOptions);
@@ -56,9 +53,12 @@ declare class Canvas {
   getUserToken(userId: string): Promise<TokenResult>;
   getAuthorizationURL(options: AuthURLOptions): string;
   setUserToken(userId: string, tokens: string[]): Promise<void>;
-  getTokens(options: GetTokensOptions): Promise<OAuth.PostResponse>;
+  getTokensFromCode(code: string): Promise<OAuth.PostResponse>;
   handleError(err: Error, code: string, redirectUrl: string): void;
   isTokenExpired(err: Error): boolean;
-  makeRequest(userId: string, requestConfig: AxiosRequestConfig, retries: number): Promise<AxiosResponse>;
-  refreshToken(userId: string, refresh_token: string): Promise<void>;
+  makeRequest(requestConfig: AxiosRequestConfig, retries: number): Promise<AxiosResponse>;
+  refreshToken(): Promise<void>;
+  getProfile(): Promise<CanvasProfile>;
+  getTokensFromUser(): Promise<void>;
+
 }
