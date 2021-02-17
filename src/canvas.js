@@ -39,7 +39,6 @@ class Canvas {
    */
   getAuthorizationURL(options = {}) {
     const { redirect_uri, state, scopes = [] } = options;
-
     return OAuth.makeURL(this.hostedUrl, '/login/oauth2/auth', {
       client_id: this.clientId,
       response_type: 'code',
@@ -52,7 +51,7 @@ class Canvas {
   /**
    * Fetches the access and refresh tokens for a valid authorization code
    */
-  async getTokensFromCode({ code }) {
+  async getTokensFromCode(code) {
     const url = OAuth.makeURL(this.hostedUrl, '/login/oauth2/token');
     try {
       const resp = await axios({
@@ -60,7 +59,7 @@ class Canvas {
         method: 'POST',
         data: JSON.stringify({
           client_id: this.clientId,
-          client_secret: this.client_secret,
+          client_secret: this.clientSecret,
           grant_type: 'authorization_code',
           code,
           redirect_uri: this.redirectUri,
@@ -72,22 +71,38 @@ class Canvas {
 
       this.accessToken = resp.data.access_token;
       this.refreshToken = resp.data.refresh_token;
-      console.log(resp);
       return resp.data;
     } catch (err) {
       this.handleError(err, code);
     }
   }
 
+  async getProfile() {
+    try {
+      const resp = await this.makeRequest({
+        url: '/api/v1/users/self/profile',
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return resp.data;
+    } catch(err) {
+      throw new LMSError('Unable to fetch user profile', 'canvas.USER_PROFILE_ERROR', {
+        userId: this.userId
+      });
+    }
+  }
+
   async getTokensFromUser() {
     try {
       const lmsData = await this.getUserToken(this.userId);
-      console.log(lmsData);
       this.accessToken = lmsData.access_token;
       this.refreshToken = lmsData.refresh_token;
     } catch (err) {
       throw new LMSError('Unable to fetch tokens from user', 'canvas.TOKEN_FETCH_ERROR', {
-        userId: this.userId
+        userId: this.userId,
+        message: err.message,
       });
     }
   }
@@ -133,13 +148,13 @@ class Canvas {
    * Attempts to refresh the access_token if canvas throws a "token expired" error and 
    * then re-attempts the request 
    */
-  async makeRequest(userId, requestConfig, retries = 0) {
+  async makeRequest(requestConfig, retries = 0) {
     try {
       
       if ( !this.refreshToken || !this.accessToken ) {
         await this.getTokensFromUser();
       }
-      
+
       const url = OAuth.makeURL(this.hostedUrl, requestConfig.url);
       const response = await axios({
           ...requestConfig,
@@ -150,7 +165,6 @@ class Canvas {
       return { data, status };
     } catch (err) {
       const status = _.get(err, 'response.status', 500);
-      console.log('status - ', err.response.headers);
       switch (status) {
         case 401:
           if (this.isTokenExpired(err)) {
@@ -160,12 +174,15 @@ class Canvas {
               });
             }
 
-            await this.refreshUserToken(userId, this.refreshToken);
-            const resp = await this.makeRequest(userId, requestConfig, retries + 1);
+            await this.refreshUserToken(this.userId, this.refreshToken);
+            const resp = await this.makeRequest(requestConfig, retries + 1);
             return resp;
           }
           break;
-
+        default:
+          throw new LMSError('Canvas error', 'canvas.UKW', {
+            err: err.response,
+          });
       }
     }
   }
@@ -176,7 +193,7 @@ class Canvas {
   async refreshUserToken(userId) {
     try {
       const url = OAuth.makeURL(this.hostedUrl, '/login/oauth2/token');
-      const tokens = await axios({
+      const resp = await axios({
         url,
         method: 'POST',
         data: JSON.stringify({
@@ -189,11 +206,15 @@ class Canvas {
           'Content-Type': 'application/json',
         }
       });
-      this.accessToken = tokens.access_token;
-      this.refreshToken = tokens.refresh_token;
-      await this.setUserToken(userId, tokens);
+
+      this.accessToken = resp.data.access_token;
+      this.refreshToken = resp.data.refresh_token;
+
+      await this.setUserToken(userId, {
+        ...resp.data,
+        lastRefresh: new Date(),
+      });
     } catch (err) {
-      console.log(err);
       throw new LMSError('Unable to refresh user token', 'canvas.REFRESH_TOKEN_ERROR', {
         userId,
         message: err.message,
