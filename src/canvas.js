@@ -19,7 +19,7 @@ class Canvas {
     clientId,
     clientSecret,
     fxs = {},
-    userId
+    userId, // mongoId
   }) {
     this.orgName = orgName;
     this.hostedUrl = hostedUrl;
@@ -39,7 +39,6 @@ class Canvas {
    */
   getAuthorizationURL(options = {}) {
     const { redirect_uri, state, scopes = [] } = options;
-
     return OAuth.makeURL(this.hostedUrl, '/login/oauth2/auth', {
       client_id: this.clientId,
       response_type: 'code',
@@ -52,7 +51,7 @@ class Canvas {
   /**
    * Fetches the access and refresh tokens for a valid authorization code
    */
-  async getTokensFromCode({ code }) {
+  async getTokensFromCode(code) {
     const url = OAuth.makeURL(this.hostedUrl, '/login/oauth2/token');
     try {
       const resp = await axios({
@@ -60,7 +59,7 @@ class Canvas {
         method: 'POST',
         data: JSON.stringify({
           client_id: this.clientId,
-          client_secret: this.client_secret,
+          client_secret: this.clientSecret,
           grant_type: 'authorization_code',
           code,
           redirect_uri: this.redirectUri,
@@ -72,22 +71,38 @@ class Canvas {
 
       this.accessToken = resp.data.access_token;
       this.refreshToken = resp.data.refresh_token;
-      console.log(resp);
       return resp.data;
     } catch (err) {
       this.handleError(err, code);
     }
   }
 
+  async getProfile() {
+    try {
+      const resp = await this.makeRequest({
+        url: '/api/v1/users/self/profile',
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return resp.data;
+    } catch(err) {
+      throw new LMSError('Unable to fetch user profile', 'canvas.USER_PROFILE_ERROR', {
+        userId: this.userId
+      });
+    }
+  }
+
   async getTokensFromUser() {
     try {
       const lmsData = await this.getUserToken(this.userId);
-      console.log(lmsData);
       this.accessToken = lmsData.access_token;
       this.refreshToken = lmsData.refresh_token;
     } catch (err) {
       throw new LMSError('Unable to fetch tokens from user', 'canvas.TOKEN_FETCH_ERROR', {
-        userId: this.userId
+        userId: this.userId,
+        message: err.message,
       });
     }
   }
@@ -134,7 +149,7 @@ class Canvas {
   async refreshUserToken() {
     try {
       const url = OAuth.makeURL(this.hostedUrl, '/login/oauth2/token');
-      const tokens = await axios({
+      const resp = await axios({
         url,
         method: 'POST',
         data: JSON.stringify({
@@ -147,11 +162,15 @@ class Canvas {
           'Content-Type': 'application/json',
         }
       });
-      this.accessToken = tokens.access_token;
-      this.refreshToken = tokens.refresh_token;
-      await this.setUserToken(this.userId, tokens);
+
+      this.accessToken = resp.data.access_token;
+      this.refreshToken = resp.data.refresh_token;
+
+      await this.setUserToken(this.userId, {
+        ...resp.data,
+        lastRefresh: new Date(),
+      });
     } catch (err) {
-      console.log(err);
       throw new LMSError('Unable to refresh user token', 'canvas.REFRESH_TOKEN_ERROR', {
         userId: this.userId,
         message: err.message,
@@ -180,7 +199,6 @@ class Canvas {
       return { data, status };
     } catch (err) {
       const status = _.get(err, 'response.status', 500);
-      console.log('status - ', err.response.headers);
       switch (status) {
         case 401:
           if (this.isTokenExpired(err)) {
@@ -194,6 +212,10 @@ class Canvas {
             return resp;
           }
           break;
+        default:
+          throw new LMSError('Canvas error', 'canvas.UKW', {
+            err: err.response,
+          });
       }
     }
   }
@@ -262,9 +284,9 @@ class Canvas {
     return submission;
   }
 
-  async gradeSubmission({ courseId, assignmentId, userId, grade, comment }) {
+  async gradeSubmission({ courseId, assignmentId, canvasUserId, grade, comment }) {
     const grade = await this.makeRequest({
-      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${userId}`,
+      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${canvasUserId}`,
       method: 'PUT',
       data: {
         submission: {
@@ -278,9 +300,9 @@ class Canvas {
     return grade;
   }
 
-  async getSubmission({ courseId, assignmentId, userId }) {
+  async getSubmission({ courseId, assignmentId, canvasUserId }) {
     const submission = await this.makeRequest({
-      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${userId}`,
+      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${canvasUserId}`,
       method: 'GET',
     });
     return submission;
@@ -294,9 +316,9 @@ class Canvas {
   }
 
   async gradeMultipleSubmissions({ courseId, assignmentId, userGradesAndComments }) {
-    const data = Object.keys(userGradesAndComments).reduce((acc, userId) => {
-      const { grade, comment } = userGradesAndComments[userId];
-      acc[userId] = { posted_grade: grade, text_comment: comment };
+    const data = Object.keys(userGradesAndComments).reduce((acc, canvasUserId) => {
+      const { grade, comment } = userGradesAndComments[canvasUserId];
+      acc[canvasUserId] = { posted_grade: grade, text_comment: comment };
       return acc;
     }, {});
     const grades = await this.makeRequest({
