@@ -4,12 +4,12 @@ const axios = require('axios');
 const _ = require('lodash');
 const OAuth = require('./oauth2');
 const LMSError = require('./error');
+const { paginatedCollect } = require('./helpers/utils');
 
 /**
  * @class Canvas
  */
 class Canvas {
-  
   constructor({
     orgName,
     hostedUrl,
@@ -95,7 +95,7 @@ class Canvas {
   /**
    * Handles some canvas API errors
    */
-  handleError(err, code, redirectUrl) {
+  handleError(err, code) {
     if (err.response) {
       switch (err.response.status) {
         case 400:
@@ -129,18 +129,48 @@ class Canvas {
   }
 
   /**
-   * Makes a request, defined by the requestConfig, to the canvas API
-   * Attempts to refresh the access_token if canvas throws a "token expired" error and 
-   * then re-attempts the request 
+   * Refreshes the access_token for the given user
    */
-  async makeRequest(userId, requestConfig, retries = 0) {
+  async refreshUserToken() {
     try {
-      
-      if ( !this.refreshToken || !this.accessToken ) {
+      const url = OAuth.makeURL(this.hostedUrl, '/login/oauth2/token');
+      const tokens = await axios({
+        url,
+        method: 'POST',
+        data: JSON.stringify({
+          grant_type: 'refresh_token',
+          client_id: this.clientId,
+          client_secret: this.clientSecret,
+          refresh_token: this.refreshToken,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      this.accessToken = tokens.access_token;
+      this.refreshToken = tokens.refresh_token;
+      await this.setUserToken(this.userId, tokens);
+    } catch (err) {
+      console.log(err);
+      throw new LMSError('Unable to refresh user token', 'canvas.REFRESH_TOKEN_ERROR', {
+        userId: this.userId,
+        message: err.message,
+      });
+    }
+  }
+
+
+  /**
+   * Makes a request, defined by the requestConfig, to the canvas API
+   * Attempts to refresh the access_token if canvas throws a "token expired" error and
+   * then re-attempts the request
+   */
+  async makeRequest(requestConfig, retries = 0) {
+    try {
+      if (!this.refreshToken || !this.accessToken) {
         await this.getTokensFromUser();
       }
-      
-      const url = OAuth.makeURL(this.hostedUrl, requestConfig.url);
+      const url = OAuth.makeURL(this.hostedUrl, requestConfig.url, requestConfig.query);
       const response = await axios({
           ...requestConfig,
           url,
@@ -159,46 +189,122 @@ class Canvas {
                 userId: this.userId,
               });
             }
-
-            await this.refreshUserToken(userId, this.refreshToken);
-            const resp = await this.makeRequest(userId, requestConfig, retries + 1);
+            await this.refreshUserToken(this.refreshToken);
+            const resp = await this.makeRequest(requestConfig, retries + 1);
             return resp;
           }
           break;
-
       }
     }
   }
 
-  /**
-   * Refreshes the access_token for the given user
-   */
-  async refreshUserToken(userId) {
-    try {
-      const url = OAuth.makeURL(this.hostedUrl, '/login/oauth2/token');
-      const tokens = await axios({
-        url,
-        method: 'POST',
-        data: JSON.stringify({
-          grant_type: 'refresh_token',
-          client_id: this.clientId,
-          client_secret: this.clientSecret,
-          refresh_token: this.refreshToken,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
+  async listCourses() {
+    const courses = await paginatedCollect(this, {
+      url: '/api/v1/courses',
+      method: 'GET',
+    });
+    return courses;
+  }
+
+  async announce({ courseId, pinned = false, title, message }) {
+    return this.makeRequest({
+      url: `/api/v1/courses/${courseId}/discussion_topics`,
+      method: 'POST',
+      data: {
+        is_announcement: true,
+        pinned,
+        published: true,
+        title,
+        message,
+      },
+    });
+  }
+
+  async listStudents({ courseId }) {
+    const students = await paginatedCollect(this, {
+      url: `/api/v1/courses/${courseId}/users`,
+      method: 'GET',
+      data: { 'enrollment_type': ['student'] },
+    });
+    return students;
+  }
+
+  async createAssignment({ courseId, assignmentName, assignmentDescription, dueAt, unlockAt }) {
+    const assignment = await this.makeRequest({
+      url: `/api/v1/courses/${courseId}/assignments`,
+      method: 'POST',
+      data: {
+        assignment: {
+          name: assignmentName,
+          submission_types: ['online_url'],
+          grading_type: 'points',
+          description: assignmentDescription,
+          due_at: dueAt,
+          unlock_at: unlockAt,
+          published: true,
+        },
+      },
+    });
+    return assignment;
+  }
+
+  async submitAssignment({ courseId, assignmentId, submission }) {
+    const submission = await this.makeRequest({
+      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions`,
+      method: 'POST',
+      data: {
+        submission: {
+          submission_type: 'online_url',
+          url: submission,
         }
-      });
-      this.accessToken = tokens.access_token;
-      this.refreshToken = tokens.refresh_token;
-      await this.setUserToken(userId, tokens);
-    } catch (err) {
-      console.log(err);
-      throw new LMSError('Unable to refresh user token', 'canvas.REFRESH_TOKEN_ERROR', {
-        userId,
-        message: err.message,
-      });
-    }
+      }
+    });
+    return submission;
+  }
+
+  async gradeSubmission({ courseId, assignmentId, userId, grade, comment }) {
+    const grade = await this.makeRequest({
+      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${userId}`,
+      method: 'PUT',
+      data: {
+        submission: {
+          posted_grade: `${grade}`,
+        },
+        comment: {
+          text_comment: comment,
+        },
+      },
+    });
+    return grade;
+  }
+
+  async getSubmission({ courseId, assignmentId, userId }) {
+    const submission = await this.makeRequest({
+      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${userId}`,
+      method: 'GET',
+    });
+    return submission;
+  }
+
+  async listSubmissions({ courseId, assignmentId}) {
+    const submissions = await paginatedCollect(this, {
+      url: `api/v1/courses/${courseId}/assignments/${assignmentId}/submissions`
+    });
+    return submissions;
+  }
+
+  async gradeMultipleSubmissions({ courseId, assignmentId, userGradesAndComments }) {
+    const data = Object.keys(userGradesAndComments).reduce((acc, userId) => {
+      const { grade, comment } = userGradesAndComments[userId];
+      acc[userId] = { posted_grade: grade, text_comment: comment };
+      return acc;
+    }, {});
+    const grades = await this.makeRequest({
+      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/update_grades`,
+      method: 'POST',
+      data: { grade_data: data }
+    });
+    return grades;
   }
 }
 
