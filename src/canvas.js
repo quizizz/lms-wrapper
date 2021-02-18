@@ -189,7 +189,7 @@ class Canvas {
       if (!this.refreshToken || !this.accessToken) {
         await this.getTokensFromUser();
       }
-      const url = OAuth.makeURL(this.hostedUrl, requestConfig.url, requestConfig.query);
+      const url = OAuth.makeURL(this.hostedUrl, requestConfig.url, requestConfig.query || {});
       const response = await axios({
           ...requestConfig,
           url,
