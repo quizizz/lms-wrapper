@@ -20,6 +20,7 @@ class Canvas {
     clientSecret,
     fxs = {},
     userId, // mongoId
+    canvasUserId,
   }) {
     this.orgName = orgName;
     this.hostedUrl = hostedUrl;
@@ -31,6 +32,7 @@ class Canvas {
     this.getUserToken = fxs.getToken || (() => {});
     this.setUserToken = fxs.setToken || (() => {});
     this.userId = userId;
+    this.canvasUserId = canvasUserId;
   }
 
   /**
@@ -71,7 +73,7 @@ class Canvas {
 
       this.accessToken = resp.data.access_token;
       this.refreshToken = resp.data.refresh_token;
-      return resp.data;
+      return { accessToken: this.accessToken, refreshToken: this.refreshToken };
     } catch (err) {
       this.handleError(err, code);
     }
@@ -96,9 +98,9 @@ class Canvas {
 
   async getTokensFromUser() {
     try {
-      const lmsData = await this.getUserToken(this.userId);
-      this.accessToken = lmsData.access_token;
-      this.refreshToken = lmsData.refresh_token;
+      const { accessToken, refreshToken } = await this.getUserToken(this.userId);
+      this.accessToken = accessToken;
+      this.refreshToken = refreshToken;
     } catch (err) {
       throw new LMSError('Unable to fetch tokens from user', 'canvas.TOKEN_FETCH_ERROR', {
         userId: this.userId,
@@ -167,8 +169,10 @@ class Canvas {
       this.refreshToken = resp.data.refresh_token;
 
       await this.setUserToken(this.userId, {
-        ...resp.data,
+        accessToken: this.accessToken,
+        refreshToken: this.refreshToken,
         lastRefresh: new Date(),
+        ...resp.data,
       });
     } catch (err) {
       throw new LMSError('Unable to refresh user token', 'canvas.REFRESH_TOKEN_ERROR', {
@@ -284,9 +288,9 @@ class Canvas {
     return submission;
   }
 
-  async gradeSubmission({ courseId, assignmentId, canvasUserId, grade, comment }) {
+  async gradeSubmission({ courseId, assignmentId, studentCanvasId, grade, comment }) {
     const grade = await this.makeRequest({
-      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${canvasUserId}`,
+      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentCanvasId}`,
       method: 'PUT',
       data: {
         submission: {
@@ -300,9 +304,9 @@ class Canvas {
     return grade;
   }
 
-  async getSubmission({ courseId, assignmentId, canvasUserId }) {
+  async getSubmission({ courseId, assignmentId, studentCanvasId }) {
     const submission = await this.makeRequest({
-      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${canvasUserId}`,
+      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentCanvasId}`,
       method: 'GET',
     });
     return submission;
@@ -316,9 +320,9 @@ class Canvas {
   }
 
   async gradeMultipleSubmissions({ courseId, assignmentId, userGradesAndComments }) {
-    const data = Object.keys(userGradesAndComments).reduce((acc, canvasUserId) => {
-      const { grade, comment } = userGradesAndComments[canvasUserId];
-      acc[canvasUserId] = { posted_grade: grade, text_comment: comment };
+    const data = Object.keys(userGradesAndComments).reduce((acc, studentCanvasId) => {
+      const { grade, comment } = userGradesAndComments[studentCanvasId];
+      acc[studentCanvasId] = { posted_grade: grade, text_comment: comment };
       return acc;
     }, {});
     const grades = await this.makeRequest({

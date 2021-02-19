@@ -4,27 +4,12 @@ import OAuth from './oauth2';
 
 export = Canvas;
 
-interface TokenFunctions {
-  getToken(userId: string): Promise<TokenResult>;
-  setToken(userId: string, tokens: string[]): Promise<void>;
-}
-
-interface TokenResult {
-  access_token: string;
-  refresh_token: string;
-}
-
-interface CanvasOptions {
-  orgName: string;
-  hostedUrl: string;
-  redirectUri: string;
+interface Tokens {
   accessToken: string;
   refreshToken: string;
-  clientId: string;
-  clientSecret: string;
-  fxs: TokenFunctions
-  userId: string;
 }
+type GetUserToken = (userId: string) => Promise<Tokens>;
+type SetUserToken = (userId: string, tokens: Tokens) => Promise<void>;
 
 interface AuthURLOptions {
   redirect_uri: string;
@@ -40,7 +25,18 @@ interface CanvasProfile {
 }
 
 declare class Canvas {
-  constructor(options: CanvasOptions);
+  constructor(options: {
+    orgName: string;
+    hostedUrl: string;
+    redirectUri: string;
+    accessToken: string;
+    refreshToken: string;
+    clientId: string;
+    clientSecret: string;
+    fxs: { getUserToken: GetUserToken, setUserToken: SetUserToken };
+    userId: string;
+    canvasUserId?: string;
+  });
 
   orgName: string;
   hostedUrl: string;
@@ -49,8 +45,12 @@ declare class Canvas {
   refreshToken: string;
   clientId: string;
   clientSecret: string;
+  getUserToken: GetUserToken;
+  setUserToken: SetUserToken;
+  userId: string;
+  canvasUserId: string;
 
-  getUserToken(userId: string): Promise<TokenResult>;
+  getUserToken(userId: string): Promise<Tokens>;
   getAuthorizationURL(options: AuthURLOptions): string;
   setUserToken(userId: string, tokens: string[]): Promise<void>;
   getTokensFromCode(code: string): Promise<OAuth.PostResponse>;
@@ -65,10 +65,10 @@ declare class Canvas {
   listStudents(args: { courseId: string }): Promise<Student[]>;
   createAssignment(args: { courseId: string; assignmentName: string; assignmentDescription?: string; dueAt?: Date; unlockAt?: Date; }): Promise<Assignment>;
   submitAssignment(args: { courseId: string; assignmentId: string; submission: string }): Promise<Submission>;
-  getSubmission(args: { courseId: string; assignmentId: string; canvasUserId: string }): Promise<Submission>;
+  getSubmission(args: { courseId: string; assignmentId: string; studentCanvasId: string }): Promise<Submission>;
   listSubmissions(args: {courseId: string; assignmentId: string}): Promise<Submission[]>;
-  gradeSubmission(args: { courseId: string; assignmentId: string; canvasUserId: string; grade: number | string; comment?: string }): Promise<GradeSubmissionResponse>;
-  gradeMultipleSubmissions(args: { courseId: string; assignmentId: string; userGradesAndComments: {[canvasUserId: string]: {grade: number | string, comment?: string } } }): Promise<{id: number; url: string}>;
+  gradeSubmission(args: { courseId: string; assignmentId: string; studentCanvasId: string; grade: number | string; comment?: string }): Promise<GradeSubmissionResponse>;
+  gradeMultipleSubmissions(args: { courseId: string; assignmentId: string; userGradesAndComments: {[studentCanvasId: string]: {grade: number | string, comment?: string } } }): Promise<{id: number; url: string}>;
 }
 
 interface GradeSubmissionResponse extends Submission {
