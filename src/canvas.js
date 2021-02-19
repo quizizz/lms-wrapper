@@ -88,6 +88,7 @@ class Canvas {
           'Content-Type': 'application/json',
         },
       });
+      this.canvasUserId = resp.data.id;
       return resp.data;
     } catch(err) {
       throw new LMSError('Unable to fetch user profile', 'canvas.USER_PROFILE_ERROR', {
