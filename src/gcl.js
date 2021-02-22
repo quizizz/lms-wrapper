@@ -133,7 +133,7 @@ class GCL {
   }
 
   // include state in extras
-  getAutorizationURL(extras) {
+  getAuthorizationURL(extras) {
     return this.authClient.generateAuthUrl(assign({
       access_type: 'offline',
       scope: this.scope,

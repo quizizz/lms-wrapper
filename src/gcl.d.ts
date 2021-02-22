@@ -19,7 +19,7 @@ declare class GCL {
     }): any;
     makeRequest(userId: any, api: any, params: any): any;
     requestWithToken(tokens: any, api: any, params: any): any;
-    getAutorizationURL(extras: any): any;
+    getAuthorizationURL(extras: any): any;
     /**
      * Get token from code
      * @param  {String} c
