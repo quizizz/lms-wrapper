@@ -225,7 +225,7 @@ class Canvas {
     }
   }
 
-  async listCourses() {
+  async getCourses() {
     const courses = await paginatedCollect(this, {
       url: '/api/v1/courses',
       method: 'GET',
