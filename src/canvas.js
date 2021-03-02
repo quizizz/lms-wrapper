@@ -256,6 +256,11 @@ class Canvas {
     return students;
   }
 
+  // TODO: Rename listStudents instead of using this
+  getCourseStudents(args) {
+    return this.listStudents(args);
+  }
+
   async createAssignment({ courseId, assignmentName, assignmentDescription, dueAt, unlockAt }) {
     const assignment = await this.makeRequest({
       url: `/api/v1/courses/${courseId}/assignments`,
