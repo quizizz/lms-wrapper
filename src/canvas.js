@@ -35,6 +35,12 @@ class Canvas {
     this.canvasUserId = canvasUserId;
   }
 
+  async build() {
+    if (!this.accessToken && !this.refreshToken) {
+      await this.getTokensFromUser();
+    }
+  }
+
   /**
    * Returns a URL used to initiate the authorization process with Canvas and fetch
    * the authorization code
@@ -99,9 +105,10 @@ class Canvas {
 
   async getTokensFromUser() {
     try {
-      const { accessToken, refreshToken } = await this.getUserToken(this.userId);
+      const { accessToken, refreshToken, canvasUserId } = await this.getUserToken(this.userId);
       this.accessToken = accessToken;
       this.refreshToken = refreshToken;
+      this.canvasUserId = canvasUserId;
     } catch (err) {
       throw new LMSError('Unable to fetch tokens from user', 'canvas.TOKEN_FETCH_ERROR', {
         userId: this.userId,
@@ -165,14 +172,14 @@ class Canvas {
           'Content-Type': 'application/json',
         }
       });
-
       this.accessToken = resp.data.access_token;
       this.refreshToken = resp.data.refresh_token;
-
+      this.canvasUserId = resp.user.id;
       await this.setUserToken(this.userId, {
         accessToken: this.accessToken,
         refreshToken: this.refreshToken,
         lastRefresh: new Date(),
+        canvasUserId: this.canvasUserId,
         ...resp.data,
       });
     } catch (err) {
@@ -219,7 +226,7 @@ class Canvas {
           break;
         default:
           throw new LMSError('Canvas error', 'canvas.UKW', {
-            err: err.response,
+            err: err.response.data,
           });
       }
     }
@@ -266,6 +273,7 @@ class Canvas {
           submission_types: ['online_url'],
           grading_type: 'points',
           description: assignmentDescription,
+          points_possible: 100,
           due_at: dueAt,
           unlock_at: unlockAt,
           published: true,
@@ -275,14 +283,14 @@ class Canvas {
     return assignment;
   }
 
-  async submitAssignment({ courseId, assignmentId, submission }) {
-    const submission = await this.makeRequest({
+  async submitAssignment({ courseId, assignmentId, submissionUrl }) {
+    const { data: submission } = await this.makeRequest({
       url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions`,
       method: 'POST',
       data: {
         submission: {
           submission_type: 'online_url',
-          url: submission,
+          url: submissionUrl,
         }
       }
     });
@@ -290,7 +298,7 @@ class Canvas {
   }
 
   async gradeSubmission({ courseId, assignmentId, studentCanvasId, grade, comment }) {
-    const grade = await this.makeRequest({
+    const { data: graded }= await this.makeRequest({
       url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentCanvasId}`,
       method: 'PUT',
       data: {
@@ -302,11 +310,11 @@ class Canvas {
         },
       },
     });
-    return grade;
+    return graded;
   }
 
   async getSubmission({ courseId, assignmentId, studentCanvasId }) {
-    const submission = await this.makeRequest({
+    const { data: submission } = await this.makeRequest({
       url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentCanvasId}`,
       method: 'GET',
     });
@@ -326,7 +334,7 @@ class Canvas {
       acc[studentCanvasId] = { posted_grade: grade, text_comment: comment };
       return acc;
     }, {});
-    const grades = await this.makeRequest({
+    const { data: grades } = await this.makeRequest({
       url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/update_grades`,
       method: 'POST',
       data: { grade_data: data }
@@ -334,5 +342,11 @@ class Canvas {
     return grades;
   }
 }
+
+Canvas.SUBMISSION_STATE = {
+  SUBMITTED: 'submitted',
+  GRADED: 'graded',
+  UNSUBMITTED: 'unsubmitted',
+};
 
 module.exports = Canvas;

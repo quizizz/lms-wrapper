@@ -7,7 +7,9 @@ export = Canvas;
 interface Tokens {
   accessToken: string;
   refreshToken: string;
+  canvasUserId: string;
 }
+
 type GetUserToken = (userId: string) => Promise<Tokens>;
 type SetUserToken = (userId: string, tokens: Tokens) => Promise<void>;
 
@@ -50,6 +52,13 @@ declare class Canvas {
   userId: string;
   canvasUserId: string;
 
+  static SUBMISSION_STATE = {
+    SUBMITTED: 'submitted',
+    GRADED: 'graded',
+    UNSUBMITTED: 'unsubmitted',
+  };
+
+  async build(): Promise<Canvas>;
   getUserToken(userId: string): Promise<Tokens>;
   getAuthorizationURL(options: AuthURLOptions): string;
   setUserToken(userId: string, tokens: string[]): Promise<void>;
@@ -64,7 +73,7 @@ declare class Canvas {
   announce(args: { courseId: string; pinned?: boolean; title: string; message: string }): Promise<void>;
   listStudents(args: { courseId: string }): Promise<Student[]>;
   createAssignment(args: { courseId: string; assignmentName: string; assignmentDescription?: string; dueAt?: Date; unlockAt?: Date; }): Promise<Assignment>;
-  submitAssignment(args: { courseId: string; assignmentId: string; submission: string }): Promise<Submission>;
+  submitAssignment(args: { courseId: string; assignmentId: string; submissionUrl: string }): Promise<Submission>;
   getSubmission(args: { courseId: string; assignmentId: string; studentCanvasId: string }): Promise<Submission>;
   listSubmissions(args: {courseId: string; assignmentId: string}): Promise<Submission[]>;
   gradeSubmission(args: { courseId: string; assignmentId: string; studentCanvasId: string; grade: number | string; comment?: string }): Promise<GradeSubmissionResponse>;
