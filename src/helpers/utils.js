@@ -18,11 +18,11 @@ exports.paginatedCollect = async (lms, requestConfig) => {
       query: { page, ...requestConfig.query },
       ...requestConfig,
     });
-    if (!result || _.isEmpty(result)) {
+    if (!result || _.isEmpty(result) || (result.data && _.isEmpty(result.data))) {
       break;
     }
     page++;
-    results.push(result);
+    results.push(...result.data);
   }
   return results;
 }

@@ -69,7 +69,7 @@ declare class Canvas {
   getProfile(): Promise<CanvasProfile>;
   getTokensFromUser(): Promise<void>;
 
-  listCourses(): Promise<Course[]>;
+  getCourses(): Promise<Course[]>;
   announce(args: { courseId: string; pinned?: boolean; title: string; message: string }): Promise<void>;
   listStudents(args: { courseId: string }): Promise<Student[]>;
   createAssignment(args: { courseId: string; assignmentName: string; assignmentDescription?: string; dueAt?: Date; unlockAt?: Date; }): Promise<Assignment>;

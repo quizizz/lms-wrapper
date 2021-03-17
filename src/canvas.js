@@ -46,12 +46,12 @@ class Canvas {
    * the authorization code
    */
   getAuthorizationURL(options = {}) {
-    const { redirect_uri, state, scopes = [] } = options;
+    const { state, scopes = [] } = options;
     return OAuth.makeURL(this.hostedUrl, '/login/oauth2/auth', {
       client_id: this.clientId,
       response_type: 'code',
       state,
-      redirect_uri,
+      redirect_uri: this.redirectUri,
       scope: scopes.join(' '),
     });
   }
@@ -219,20 +219,25 @@ class Canvas {
                 userId: this.userId,
               });
             }
-            await this.refreshUserToken(this.refreshToken);
+            try {
+              await this.refreshUserToken(this.refreshToken);
+            } catch(err) {
+            }
+
             const resp = await this.makeRequest(requestConfig, retries + 1);
             return resp;
           }
           break;
         default:
+          const errorData = _.get(err, 'response.data', {});
           throw new LMSError('Canvas error', 'canvas.UKW', {
-            err: err.response.data,
+            err: errorData ? errorData : err,
           });
       }
     }
   }
 
-  async listCourses() {
+  async getCourses() {
     const courses = await paginatedCollect(this, {
       url: '/api/v1/courses',
       method: 'GET',
@@ -263,23 +268,43 @@ class Canvas {
     return students;
   }
 
-  async createAssignment({ courseId, assignmentName, assignmentDescription, dueAt, unlockAt }) {
-    const assignment = await this.makeRequest({
+  // TODO: Rename listStudents instead of using this
+  getCourseStudents(args) {
+    return this.listStudents(args);
+  }
+
+  async createAssignment({ courseId, assignmentName, assignmentDescription, dueAt, unlockAt, studentIds = [] }) {
+    const payload = {
+      name: assignmentName,
+      submission_types: ['online_url'],
+      grading_type: 'points',
+      description: assignmentDescription,
+      published: true,
+    };
+
+    if (dueAt) {
+      payload.due_at = dueAt;
+    }
+
+    if (unlockAt) {
+      payload.unlock_at = unlockAt;
+    }
+
+    if (_.isArray(studentIds) && studentIds.length > 0) {
+      payload.only_visible_to_overrides = true;
+      payload.assignment_overrides = [
+        {
+          "student_ids": studentIds
+        }
+      ];
+    }
+
+    const { data: assignment } = await this.makeRequest({
       url: `/api/v1/courses/${courseId}/assignments`,
       method: 'POST',
-      data: {
-        assignment: {
-          name: assignmentName,
-          submission_types: ['online_url'],
-          grading_type: 'points',
-          description: assignmentDescription,
-          points_possible: 100,
-          due_at: dueAt,
-          unlock_at: unlockAt,
-          published: true,
-        },
-      },
+      data: { assignment: payload },
     });
+
     return assignment;
   }
 
