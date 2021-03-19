@@ -22,7 +22,11 @@ exports.paginatedCollect = async (lms, requestConfig) => {
       break;
     }
     page++;
-    results.push(...result.data);
+    if (Array.isArray(result.data)) {
+      results.push(...result.data);
+    } else {
+      results.push(result);
+    }
   }
   return results;
 }

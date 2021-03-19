@@ -354,7 +354,7 @@ class Canvas {
   }
 
   async gradeMultipleSubmissions({ courseId, assignmentId, userGradesAndComments }) {
-    const data = Object.keys(userGradesAndComments).reduce((acc, studentCanvasId) => {
+    const gradeData = Object.keys(userGradesAndComments).reduce((acc, studentCanvasId) => {
       const { grade, comment } = userGradesAndComments[studentCanvasId];
       acc[studentCanvasId] = { posted_grade: grade, text_comment: comment };
       return acc;
@@ -362,7 +362,7 @@ class Canvas {
     const { data: grades } = await this.makeRequest({
       url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/update_grades`,
       method: 'POST',
-      data: { grade_data: data }
+      data: { grade_data: gradeData }
     });
     return grades;
   }
