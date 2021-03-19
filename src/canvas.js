@@ -105,10 +105,10 @@ class Canvas {
 
   async getTokensFromUser() {
     try {
-      const { accessToken, refreshToken, canvasUserId } = await this.getUserToken(this.userId);
+      const { accessToken, refreshToken, info } = await this.getUserToken(this.userId);
       this.accessToken = accessToken;
       this.refreshToken = refreshToken;
-      this.canvasUserId = canvasUserId;
+      this.canvasUserId = info.id;
     } catch (err) {
       throw new LMSError('Unable to fetch tokens from user', 'canvas.TOKEN_FETCH_ERROR', {
         userId: this.userId,
@@ -173,13 +173,13 @@ class Canvas {
         }
       });
       this.accessToken = resp.data.access_token;
-      this.refreshToken = resp.data.refresh_token;
-      this.canvasUserId = resp.user.id;
+      this.canvasUserId = resp.data.user.id;
+
       await this.setUserToken(this.userId, {
-        accessToken: this.accessToken,
-        refreshToken: this.refreshToken,
+        access_token: this.accessToken,
+        expires_in: resp.data.expires_in,
+        token_type: resp.data.token_type,
         lastRefresh: new Date(),
-        canvasUserId: this.canvasUserId,
         ...resp.data,
       });
     } catch (err) {
@@ -222,6 +222,7 @@ class Canvas {
             try {
               await this.refreshUserToken(this.refreshToken);
             } catch(err) {
+              console.error(err);
             }
 
             const resp = await this.makeRequest(requestConfig, retries + 1);
