@@ -39,6 +39,7 @@ class Canvas {
     if (!this.accessToken && !this.refreshToken) {
       await this.getTokensFromUser();
     }
+    return this;
   }
 
   /**
