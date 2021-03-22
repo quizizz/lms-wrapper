@@ -281,6 +281,7 @@ class Canvas {
       submission_types: ['online_url'],
       grading_type: 'points',
       description: assignmentDescription,
+      points_possible: 100,
       published: true,
     };
 
@@ -325,7 +326,7 @@ class Canvas {
   }
 
   async gradeSubmission({ courseId, assignmentId, studentCanvasId, grade, comment }) {
-    const { data: graded }= await this.makeRequest({
+    const { data: graded } = await this.makeRequest({
       url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentCanvasId}`,
       method: 'PUT',
       data: {
