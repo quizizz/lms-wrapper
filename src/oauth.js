@@ -87,15 +87,14 @@ class OAuth {
 
 
 	async getRequestTokens( apiPath ) {
-		const oAuthDetails = this.getOAuthDetails();
+		const oAuthDetails = this.getOAuthDetails(false);
 		const requestedAt = Date.now();
 
 		try {
 			const response = await OAuth.get(this.apiBase, apiPath, oAuthDetails);
-
 			const jsonified = OAuth.jsonifyResponseString(response.data);
 			const ttl = parseInt( jsonified[ 'xoauth_token_ttl' ] ) || 3600;
-			debugger;
+
 			return {
 				success: true,
 				response: {
@@ -105,7 +104,6 @@ class OAuth {
 				}
 			}
 		} catch ( error ) {
-			debugger;
 			this.errorHandler(error);
 		}
 	}
@@ -115,8 +113,8 @@ class OAuth {
 
 		try {
 			const response = await OAuth.get(this.apiBase, apiPath, oAuthDetails);
-			debugger;
 			const jsonified = OAuth.jsonifyResponseString(response.data);
+
       		this.accessToken = {
 				token: jsonified[ 'oauth_token' ],
 				secret: jsonified[ 'oauth_token_secret' ],
@@ -127,7 +125,6 @@ class OAuth {
 				response: this.accessToken
 			}
 		} catch (error) {
-			debugger;
 			this.errorHandler(error);
 		}
 	}
@@ -140,15 +137,12 @@ class OAuth {
 	async makeRequest(requestConfig, retries = 0) {
 		try {
 			if (_.isEmpty(this.accessToken)) {
-				debugger;
 				// this.errorHandler( {} )
 				return;
 			}
 
 			const url = OAuth.makeURL(this.apiBase, requestConfig.url, requestConfig.query || {});
 			const oAuthHeader = this.getOAuthHeader();
-
-			debugger;
 
 			const response = await axios({
 				...requestConfig,
@@ -158,16 +152,15 @@ class OAuth {
 					...requestConfig.headers 
 				},
 			});
-			debugger;
 			const { data, status } = response;
 			
 			return { data, status };
-		} catch (err) {
-			debugger;
+		} catch (error) {
+			this.errorHandler(error);
 		}
 	}
 
-	getOAuthDetails() {
+	getOAuthDetails( attachAccessToken = true ) {
 		const timestamp = OAuth.getTimeStamp();
 		const nonce = OAuth.getNonce( this.nonceLength );
 		const token = this.accessToken.token || this.requestToken.token || '';
@@ -183,14 +176,15 @@ class OAuth {
 			oAuthConfig[ 'oauth_consumer_key' ] = this.consumerKey;
 		}
 
-		if ( !_.isEmpty( token ) ) {
+		if ( attachAccessToken && !_.isEmpty( token ) ) {
 			oAuthConfig[ 'oauth_token' ] = token;
 		}
 		
 		if ( !_.isEmpty( this.consumerSecret ) || !_.isEmpty(secret) ) {
-			oAuthConfig[ 'oauth_signature' ] = `${this.consumerSecret}&${secret}`;
+			const secretToUse = attachAccessToken ? secret : '';
+			oAuthConfig[ 'oauth_signature' ] = `${this.consumerSecret}&${secretToUse}`;
 		}
-
+		
 		return oAuthConfig;
 	}
 

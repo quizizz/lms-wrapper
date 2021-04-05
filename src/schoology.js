@@ -58,7 +58,7 @@ class Schoology {
         'oauth_callback': this.redirectUri,
       } )
     } catch ( error ) {
-      this.handleError(err)
+      this.handleError(error)
     }
   }
   
@@ -83,7 +83,8 @@ class Schoology {
    * Handles some schoology API errors
    */
   handleError(error) {
-    console.log('\n YOLO SCHOOLOGY error', error)
+    console.error('\n [Schoology] Error -', error)
+
     if (error.response) {
       switch (error.response.status) {
         default:
