@@ -340,7 +340,7 @@ class Schoology {
     return grades;
   }
 
-  async gradeSubmission({ sectionId, assignmentId, enrollmentId, grade, comment }) {
+  async gradeSubmission({ sectionId, assignmentId, enrollmentId, grade, comment = null }) {
     const { data: graded } = await this.makeRequest({
       url: `/v1/sections/${sectionId}/grades`,
       method: 'PUT',
