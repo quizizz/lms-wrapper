@@ -154,39 +154,39 @@ class Schoology {
   /**
    * Refreshes the access_token for the given user
    */
-  // async refreshUserToken() {
-  //   try {
-  //     const url = OAuth.makeURL(this.hostedUrl, '/login/oauth2/token');
-  //     const resp = await axios({
-  //       url,
-  //       method: 'POST',
-  //       data: JSON.stringify({
-  //         grant_type: 'refresh_token',
-  //         client_id: this.clientId,
-  //         client_secret: this.clientSecret,
-  //         refresh_token: this.refreshToken,
-  //       }),
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       }
-  //     });
-  //     this.accessToken = resp.data.access_token;
-  //     this.schoologyUserId = resp.data.user.id;
+  async refreshUserToken() {
+    try {
+      const url = OAuth.makeURL(this.hostedUrl, '/login/oauth2/token');
+      const resp = await axios({
+        url,
+        method: 'POST',
+        data: JSON.stringify({
+          grant_type: 'refresh_token',
+          client_id: this.clientId,
+          client_secret: this.clientSecret,
+          refresh_token: this.refreshToken,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      this.accessToken = resp.data.access_token;
+      this.schoologyUserId = resp.data.user.id;
 
-  //     await this.setUserToken(this.userId, {
-  //       access_token: this.accessToken,
-  //       expires_in: resp.data.expires_in,
-  //       token_type: resp.data.token_type,
-  //       lastRefresh: new Date(),
-  //       ...resp.data,
-  //     });
-  //   } catch (err) {
-  //     throw new LMSError('Unable to refresh user token', 'schoology.REFRESH_TOKEN_ERROR', {
-  //       userId: this.userId,
-  //       message: err.message,
-  //     });
-  //   }
-  // }
+      await this.setUserToken(this.userId, {
+        access_token: this.accessToken,
+        expires_in: resp.data.expires_in,
+        token_type: resp.data.token_type,
+        lastRefresh: new Date(),
+        ...resp.data,
+      });
+    } catch (err) {
+      throw new LMSError('Unable to refresh user token', 'schoology.REFRESH_TOKEN_ERROR', {
+        userId: this.userId,
+        message: err.message,
+      });
+    }
+  }
 
 
   /**
@@ -194,51 +194,51 @@ class Schoology {
    * Attempts to refresh the access_token if schoology throws a "token expired" error and
    * then re-attempts the request
    */
-  // async makeRequest(requestConfig, retries = 0) {
-  //   try {
-  //     if (!this.refreshToken || !this.accessToken) {
-  //       await this.getTokensFromUser();
-  //     }
-  //     const url = OAuth.makeURL(this.hostedUrl, requestConfig.url, requestConfig.query || {});
-  //     const response = await axios({
-  //         ...requestConfig,
-  //         url,
-  //         headers: { Authorization: `Bearer ${this.accessToken}` },
-  //     });
-  //     const { data, status } = response;
-  //     return { data, status };
-  //   } catch (err) {
-  //     const status = _.get(err, 'response.status', 500);
-  //     switch (status) {
-  //       case 401:
-  //         if (this.isTokenExpired(err)) {
-  //           if (retries >= 2) {
-  //             throw new LMSError('Tried to refresh token 2 times and failed', 'schoology.TOO_MANY_RETRIES', {
-  //               userId: this.userId,
-  //             });
-  //           }
-  //           try {
-  //             await this.refreshUserToken(this.refreshToken);
-  //           } catch(err) {
-  //             console.error(err);
-  //           }
+  async makeRequest(requestConfig, retries = 0) {
+    try {
+      if (!this.refreshToken || !this.accessToken) {
+        await this.getTokensFromUser();
+      }
+      const url = OAuth.makeURL(this.hostedUrl, requestConfig.url, requestConfig.query || {});
+      const response = await axios({
+          ...requestConfig,
+          url,
+          headers: { Authorization: `Bearer ${this.accessToken}` },
+      });
+      const { data, status } = response;
+      return { data, status };
+    } catch (err) {
+      const status = _.get(err, 'response.status', 500);
+      switch (status) {
+        case 401:
+          if (this.isTokenExpired(err)) {
+            if (retries >= 2) {
+              throw new LMSError('Tried to refresh token 2 times and failed', 'schoology.TOO_MANY_RETRIES', {
+                userId: this.userId,
+              });
+            }
+            try {
+              await this.refreshUserToken(this.refreshToken);
+            } catch(err) {
+              console.error(err);
+            }
 
-  //           const resp = await this.makeRequest(requestConfig, retries + 1);
-  //           return resp;
-  //         }
-  //         break;
-  //       default:
-  //         const errorData = _.get(err, 'response.data', {});
-  //         throw new LMSError('Schoology error', 'schoology.UKW', {
-  //           err: errorData ? errorData : err,
-  //         });
-  //     }
-  //   }
-  // }
-
-  makeRequest(requestConfig) {
-    return this.oAuth.makeRequest(requestConfig);
+            const resp = await this.makeRequest(requestConfig, retries + 1);
+            return resp;
+          }
+          break;
+        default:
+          const errorData = _.get(err, 'response.data', {});
+          throw new LMSError('Schoology error', 'schoology.error', {
+            err: errorData ? errorData : err,
+          });
+      }
+    }
   }
+
+  // makeRequest(requestConfig) {
+  //   return this.oAuth.makeRequest(requestConfig);
+  // }
 
   async getCourses(buildingId) {
     const req = {
@@ -321,6 +321,19 @@ class Schoology {
     return submission;
   }
 
+  async getGrades({sectionId, assignmentId, enrollmentId, timestamp}) {
+    let query = {}
+    if (assignmentId) query['assignment_id'] = assignmentId
+    if (enrollmentId) query['enrollment_id'] = enrollmentId
+    if (timestamp) query['timestamp'] = timestamp
+    const grades = await this.makeRequest({
+      url: `/v1/sections/${sectionId}/grades`,
+      method: 'GET',
+      query
+    });
+    return grades;
+  }
+
   async gradeSubmission({ sectionId, assignmentId, enrollmentId, grade, comment }) {
     const { data: graded } = await this.makeRequest({
       url: `/v1/sections/${sectionId}/grades`,
@@ -342,9 +355,9 @@ class Schoology {
     return graded;
   }
 
-  async getSubmission({ courseId, assignmentId, studentSchoologyId }) {
+  async getSubmission({ sectionId, assignmentId, studentSchoologyId }) {
     const submission = await this.makeRequest({
-      url: `/v1/sections/${courseId}/submissions/${assignmentId}/${studentSchoologyId}`,
+      url: `/v1/sections/${sectionId}/submissions/${assignmentId}/${studentSchoologyId}`,
       method: 'GET',
     });
     return submission;
