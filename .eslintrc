@@ -336,5 +336,6 @@
       "inside"
     ],
     "yoda": 2
-  }
+  },
+  "parser": "babel-eslint"
 }

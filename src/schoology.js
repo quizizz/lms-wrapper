@@ -27,16 +27,16 @@ class Schoology {
     this.getUserAccessToken = fxs.getAccessToken || (() => {});
     this.setUserAccessToken = fxs.setAccessToken || (() => {});
 
-    this.oAuth = new OAuth( {
-      consumerKey: this.clientId, 
-      consumerSecret: this.clientSecret, 
-      apiBase: 'https://api.schoology.com', 
+    this.oAuth = new OAuth({
+      consumerKey: this.clientId,
+      consumerSecret: this.clientSecret,
+      apiBase: 'https://api.schoology.com',
       authRealm: 'Schoology API',
       signatureMethod: 'PLAINTEXT',
       nonceLength: 16,
       requestToken,
       accessToken,
-      handleError: this.handleError
+      handleError: this.handleError,
     });
   }
 
@@ -51,35 +51,35 @@ class Schoology {
    * Returns a URL used to initiate the authorization process with schoology and fetch
    * the authorization code
    */
-   async getAuthorizationURL(options = {}) {
+  async getAuthorizationURL() {
     try {
       const result = await this.oAuth.getRequestTokens('/v1/oauth/request_token');
       const tokenData = result.response;
 
       await this.cacheRequestToken(tokenData);
       
-      return OAuth.makeURL( this.hostedUrl, '/oauth/authorize', {
+      return OAuth.makeURL(this.hostedUrl, '/oauth/authorize', {
         'oauth_token': tokenData.token,
         'oauth_callback': this.redirectUri,
-      } )
-    } catch ( error ) {
-      this.handleError(error)
+      });
+    } catch (error) {
+      this.handleError(error);
     }
   }
 
   /**
    * Fetches the access and refresh tokens for a valid authorization code
    */
-   async getAccessTokens() {
+  async getAccessTokens() {
     try {
       const result = await this.oAuth.getAccessTokens('/v1/oauth/access_token');
       const tokenData = result.response;
       
-      await this.setUserAccessToken( tokenData );
+      await this.setUserAccessToken(tokenData);
       
       return tokenData;
-    } catch ( error ) {
-      this.handleError(error)
+    } catch (error) {
+      this.handleError(error);
     }
   }
 
@@ -94,9 +94,9 @@ class Schoology {
       });
       this.schoologyUserId = resp.data.id;
       return resp.data;
-    } catch(err) {
+    } catch (err) {
       throw new LMSError('Unable to fetch user profile', 'schoology.USER_PROFILE_ERROR', {
-        userId: this.userId
+        userId: this.userId,
       });
     }
   }
@@ -144,8 +144,8 @@ class Schoology {
 
   isTokenExpired(err) {
     // check condition for token expiration, schoology sends a `WWW-Authenticate` header if 401 is for token expiry
-    const headers = _.get( err, 'response.headers', {} );
-    if ( headers['www-authenticate'] ) {
+    const headers = _.get(err, 'response.headers', {});
+    if (headers['www-authenticate']) {
       return true;
     }
     return false;
@@ -168,7 +168,7 @@ class Schoology {
         }),
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
       });
       this.accessToken = resp.data.access_token;
       this.schoologyUserId = resp.data.user.id;
@@ -201,9 +201,9 @@ class Schoology {
       }
       const url = OAuth.makeURL(this.hostedUrl, requestConfig.url, requestConfig.query || {});
       const response = await axios({
-          ...requestConfig,
-          url,
-          headers: { Authorization: `Bearer ${this.accessToken}` },
+        ...requestConfig,
+        url,
+        headers: { Authorization: `Bearer ${this.accessToken}` },
       });
       const { data, status } = response;
       return { data, status };
@@ -219,8 +219,8 @@ class Schoology {
             }
             try {
               await this.refreshUserToken(this.refreshToken);
-            } catch(err) {
-              console.error(err);
+            } catch (error) {
+              console.error(error);
             }
 
             const resp = await this.makeRequest(requestConfig, retries + 1);
@@ -243,10 +243,10 @@ class Schoology {
   async getCourses(buildingId) {
     const req = {
       url: '/v1/courses',
-      method: 'GET'
+      method: 'GET',
     };
     if (buildingId) {
-      req.query = {'building_id': buildingId}
+      req.query = { 'building_id': buildingId };
     }
 
     const courses = await paginatedCollect(this, req);
@@ -269,7 +269,7 @@ class Schoology {
         published: 1,
         title,
         body,
-        ...args
+        ...args,
       },
     });
   }
@@ -298,7 +298,7 @@ class Schoology {
     }
 
     if (_.isArray(studentIds) && studentIds.length > 0) {
-      payload.assignees = studentIds
+      payload.assignees = studentIds;
     }
 
     const assignment = await this.makeRequest({
@@ -315,21 +315,27 @@ class Schoology {
       url: `/v1/sections/${sectionId}/submissions/${assignmentId}/create`,
       method: 'POST',
       data: {
-        body: submissionUrl
-      }
+        body: submissionUrl,
+      },
     });
     return submission;
   }
 
-  async getGrades({sectionId, assignmentId, enrollmentId, timestamp}) {
-    let query = {}
-    if (assignmentId) query['assignment_id'] = assignmentId
-    if (enrollmentId) query['enrollment_id'] = enrollmentId
-    if (timestamp) query['timestamp'] = timestamp
+  async getGrades({ sectionId, assignmentId, enrollmentId, timestamp }) {
+    let query = {};
+    if (assignmentId) {
+      query.assignment_id = assignmentId;
+    }
+    if (enrollmentId) {
+      query.enrollment_id = enrollmentId;
+    }
+    if (timestamp) {
+      query.timestamp = timestamp;
+    }
     const grades = await this.makeRequest({
       url: `/v1/sections/${sectionId}/grades`,
       method: 'GET',
-      query
+      query,
     });
     return grades;
   }
@@ -339,18 +345,18 @@ class Schoology {
       url: `/v1/sections/${sectionId}/grades`,
       method: 'PUT',
       data: {
-        "grades": {
-          "grade": [
+        'grades': {
+          'grade': [
             {
-              "type": "assignment",
-              "assignment_id": assignmentId,
-              "enrollment_id": enrollmentId,
+              'type': 'assignment',
+              'assignment_id': assignmentId,
+              'enrollment_id': enrollmentId,
               grade,
-              comment
-            }
-          ]
-        }
-      }
+              comment,
+            },
+          ],
+        },
+      },
     });
     return graded;
   }
@@ -363,9 +369,9 @@ class Schoology {
     return submission;
   }
 
-  async listSubmissions({ sectionId, assignmentId}) {
+  async listSubmissions({ sectionId, assignmentId }) {
     const submissions = await paginatedCollect(this, {
-      url: `/v1/sections/${sectionId}/submissions/${assignmentId}/`
+      url: `/v1/sections/${sectionId}/submissions/${assignmentId}/`,
     });
     return submissions;
   }
@@ -379,7 +385,7 @@ class Schoology {
     const { data: grades } = await this.makeRequest({
       url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/update_grades`,
       method: 'POST',
-      data: { grade_data: gradeData }
+      data: { grade_data: gradeData },
     });
     return grades;
   }
