@@ -341,7 +341,7 @@ class Schoology {
   }
 
   async gradeSubmission({ sectionId, assignmentId, enrollmentId, grade, comment = null }) {
-    const { data: graded } = await this.makeRequest({
+    const graded = await this.makeRequest({
       url: `/v1/sections/${sectionId}/grades`,
       method: 'PUT',
       data: {
@@ -371,21 +371,20 @@ class Schoology {
 
   async listSubmissions({ sectionId, assignmentId }) {
     const submissions = await paginatedCollect(this, {
-      url: `/v1/sections/${sectionId}/submissions/${assignmentId}/`,
+      url: `/v1/sections/${sectionId}/submissions/${assignmentId}`,
     });
     return submissions;
   }
 
-  async gradeMultipleSubmissions({ courseId, assignmentId, userGradesAndComments }) {
-    const gradeData = Object.keys(userGradesAndComments).reduce((acc, studentschoologyId) => {
-      const { grade, comment } = userGradesAndComments[studentschoologyId];
-      acc[studentschoologyId] = { posted_grade: grade, text_comment: comment };
-      return acc;
-    }, {});
-    const { data: grades } = await this.makeRequest({
-      url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/update_grades`,
-      method: 'POST',
-      data: { grade_data: gradeData },
+  async gradeMultipleSubmissions({ sectionId, userGradesAndComments }) {
+    const graded = await this.makeRequest({
+      url: `/v1/sections/${sectionId}/grades`,
+      method: 'PUT',
+      data: {
+        'grades': {
+          'grade': userGradesAndComments
+        },
+      },
     });
     return grades;
   }
