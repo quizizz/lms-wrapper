@@ -15,6 +15,7 @@ class Schoology {
     clientId,
     clientSecret,
     userId, // mongoId
+    schoologyProfileId,
     requestToken = {},
     accessToken = {},
     fxs = {},
@@ -24,6 +25,7 @@ class Schoology {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
     this.userId = userId;
+    this.schoologyProfileId = schoologyProfileId;
     this.cacheRequestToken = fxs.cacheRequestToken || (() => {});
     this.getUserAccessToken = fxs.getAccessToken || (() => {});
     this.setUserAccessToken = fxs.setAccessToken || (() => {});
@@ -118,39 +120,25 @@ class Schoology {
     }
   }
 
-  async getCourses(buildingId) {
-    const req = {
-      url: '/v1/courses',
+  async getCourses() {
+    let schoologyProfileId = this.schoologyProfileId;
+
+    if (_.isEmpty(schoologyProfileId)) {
+      schoologyProfileId = await this.getUserIdFromTokens();
+    }
+
+    const courses = await this.paginatedCollect({
+      url: `v1/users/${schoologyProfileId}/sections`,
       method: 'GET'
-    };
-    if (buildingId) {
-      req.query = {'building_id': buildingId}
-    }
-
-    const courses = await this.paginatedCollect(req, 'course');
-    const allSections = [];
-    const promises = [];
-
-    for ( let i = 0; i < courses.length; i++ ) {
-      promises.push( this.getCourseSections( courses[ i ].id ) );
-    }
+    }, 'section');
     
-    const result = await Promise.all( promises );
-    
-    _.forEach( result, ( courseSections ) => {
-      if (!Array.isArray(courseSections)) {
-        allSections.push(courseSections);
-      } else {
-        const sections = courseSections.map( (section) => ( { ...section, name: `${section.course_title}: ${section.section_title}` } ) );
-
-        allSections.push(...sections);
-      }
-    } );
-
-    return allSections;
+    return _.map(courses, (course) => ({
+      ...course,
+      name: `${course.course_title}: ${course.section_title}`
+    }));
   }
 
-  async getCourseSections(courseId) {
+  async getAllSectionsForCourse(courseId) {
     const sections = await this.paginatedCollect({
       url: `/v1/courses/${courseId}/sections`,
       method: 'GET',
@@ -185,6 +173,27 @@ class Schoology {
   // TODO: Rename listStudents instead of using this
   getCourseStudents({ courseId }) {
     return this.listStudents({sectionId: courseId});
+  }
+
+  async getUserIdFromTokens() {
+    const response = await this.makeRequest({
+      url: 'v1/app-user-info',
+      method: 'GET',
+    });
+    this.schoologyProfileId = response.data.api_uid;
+  
+    return this.schoologyProfileId;
+  }
+
+  async getUserProfile() {
+    const userProfileId = await this.getUserIdFromTokens();
+
+    const response = await schoology.makeRequest({
+      url: `v1/users/${userProfileId}`,
+      method: 'GET',
+    });
+    
+    return response.data;
   }
 
   async createAssignment({ sectionId, assignmentName, assignmentDescription, dueAt, studentIds = [], gradeCategoryId }) {
