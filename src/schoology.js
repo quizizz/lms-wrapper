@@ -30,10 +30,10 @@ class Schoology {
     this.getUserAccessToken = fxs.getAccessToken || (() => {});
     this.setUserAccessToken = fxs.setAccessToken || (() => {});
 
-    this.oAuth = new OAuth( {
-      consumerKey: this.clientId, 
-      consumerSecret: this.clientSecret, 
-      apiBase: 'https://api.schoology.com', 
+    this.oAuth = new OAuth({
+      consumerKey: this.clientId,
+      consumerSecret: this.clientSecret,
+      apiBase: 'https://api.schoology.com',
       authRealm: 'Schoology API',
       signatureMethod: 'PLAINTEXT',
       nonceLength: 16,
@@ -60,7 +60,7 @@ class Schoology {
       const tokenData = result.response;
 
       await this.cacheRequestToken(tokenData);
-      
+
       return OAuth.makeURL( this.hostedUrl, '/oauth/authorize', {
         'oauth_token': tokenData.token,
         'oauth_callback': this.redirectUri,
@@ -81,7 +81,7 @@ class Schoology {
       if ( storeUserAccessTokens ) {
         await this.setUserAccessToken( tokenData );
       }
-      
+
       return tokenData;
     } catch ( error ) {
       this.handleError(error)
@@ -131,7 +131,7 @@ class Schoology {
       url: `v1/users/${schoologyProfileId}/sections`,
       method: 'GET'
     }, 'section');
-    
+
     return _.map(courses, (course) => ({
       ...course,
       name: `${course.course_title}: ${course.section_title}`
@@ -181,18 +181,18 @@ class Schoology {
       method: 'GET',
     });
     this.schoologyProfileId = response.data.api_uid;
-  
+
     return this.schoologyProfileId;
   }
 
   async getUserProfile() {
     const userProfileId = await this.getUserIdFromTokens();
 
-    const response = await schoology.makeRequest({
+    const response = await this.makeRequest({
       url: `v1/users/${userProfileId}`,
       method: 'GET',
     });
-    
+
     return response.data;
   }
 
@@ -272,7 +272,7 @@ class Schoology {
     const submissions = await this.paginatedCollect({
       url: `/v1/sections/${sectionId}/submissions/${assignmentId}/`
     }, 'revision');
-    
+
     return submissions;
   }
 
@@ -307,7 +307,7 @@ class Schoology {
       method: 'GET',
       query,
     });
-    
+
     return response.data;
   }
 
@@ -319,7 +319,7 @@ class Schoology {
 
       if ( error.response.status === 404 ) {
         throw new LMSError('Grade category does not exist', 'schoology.INVALID_GRADE_CATEGORY', {
-          sectionId, 
+          sectionId,
           gradeCategoryId: id
         });
       }
@@ -354,19 +354,19 @@ class Schoology {
       calculation_type: 1,
       default_grading_scale_id: 0
     }));
-    
+
     const payload = {
       grading_categories: {
         grading_category: gradingCategories
       }
     };
-    
+
     const response = await this.makeRequest({
       url: `/v1/sections/${sectionId}/grading_categories`,
       method: 'POST',
       data: payload,
     });
-    
+
     const createdCategories = response.data.grading_category;
     const duplicateCategories = _.map(_.filter(createdCategories, (c) => c.response_code === 400), 'title');
 
@@ -403,7 +403,7 @@ class Schoology {
             message: error.message,
             body: error.response.body,
           });
-          
+
         default:
           throw new LMSError('An error occured', 'schoology.UKW', {
             message: error.message,
@@ -420,7 +420,7 @@ class Schoology {
   isTokenExpired(err) {
     // check condition for token expiration, schoology sends a `WWW-Authenticate` header if 401 is for token expiry
     const headers = _.get( err, 'response.headers', {} );
-    
+
     if ( headers['www-authenticate'] ) {
       return true;
     }
