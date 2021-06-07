@@ -196,12 +196,11 @@ class Schoology {
     return response.data;
   }
 
-  async createAssignment({ sectionId, assignmentName, assignmentDescription, dueAt, studentIds = [], gradeCategoryId }) {
+  async createAssignment({ sectionId, assignmentName, assignmentDescription, dueAt, studentIds = [], gradeCategoryId, options }) {
     const payload = {
       title: assignmentName,
       type: 'assignment',
       description: assignmentDescription,
-      max_points: 100,
       published: 1,
       show_comments: 1,
     };
@@ -214,9 +213,11 @@ class Schoology {
       payload.assignees = studentIds
     }
 
-    if (gradeCategoryId) {
+    const { grading: {} } = options;
+    if (grading.isGraded && gradeCategoryId) {
       payload.grading_category = gradeCategoryId;
     }
+    payload.max_points = grading.maxPoints || 100;
 
     const assignment = await this.makeRequest({
       url: `/v1/sections/${sectionId}/assignments`,

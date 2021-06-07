@@ -217,7 +217,6 @@ class GCL {
         dueDate: getGCLDate(dueTS),
         dueTime: getGCLTime(dueTS),
         workType: 'ASSIGNMENT',
-        maxPoints: data.maxPoints,
       },
     };
 
@@ -226,6 +225,13 @@ class GCL {
         scheduledTime: data.startDate,
         state: 'DRAFT',
       });
+    }
+
+    const { grading: {} } = data;
+    if (grading.isGraded) {
+      request.maxPoints = grading.maxPoints || 100;
+    } else {
+      request.maxPoints = 0;
     }
 
     return this.makeRequest(userId, classroom.courses.courseWork.create, request);
