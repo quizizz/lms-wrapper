@@ -229,9 +229,9 @@ class GCL {
 
     const { grading = {} } = data;
     if (grading.isGraded) {
-      request.maxPoints = grading.maxPoints || 100;
+      request.resource.maxPoints = grading.maxPoints || 100;
     } else {
-      request.maxPoints = 0;
+      request.resource.maxPoints = 0;
     }
 
     return this.makeRequest(userId, classroom.courses.courseWork.create, request);
