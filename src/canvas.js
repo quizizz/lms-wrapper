@@ -302,7 +302,7 @@ class Canvas {
       ];
     }
 
-    const { grading: {} } = options;
+    const { grading = {} } = options;
     if (grading.isGraded) {
       payload.grading_type = 'points';
       payload.points_possible = grading.maxPoints || 100;

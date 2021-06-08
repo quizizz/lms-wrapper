@@ -213,7 +213,7 @@ class Schoology {
       payload.assignees = studentIds
     }
 
-    const { grading: {} } = options;
+    const { grading = {} } = options;
     if (grading.isGraded && gradeCategoryId) {
       payload.grading_category = gradeCategoryId;
     }
