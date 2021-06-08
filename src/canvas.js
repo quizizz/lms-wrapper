@@ -279,9 +279,7 @@ class Canvas {
     const payload = {
       name: assignmentName,
       submission_types: ['online_url'],
-      grading_type: 'points',
       description: assignmentDescription,
-      points_possible: 100,
       published: true,
     };
 
