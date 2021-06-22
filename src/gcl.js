@@ -217,7 +217,6 @@ class GCL {
         dueDate: getGCLDate(dueTS),
         dueTime: getGCLTime(dueTS),
         workType: 'ASSIGNMENT',
-        maxPoints: data.maxPoints,
       },
     };
 
@@ -226,6 +225,13 @@ class GCL {
         scheduledTime: data.startDate,
         state: 'DRAFT',
       });
+    }
+
+    const { grading = {} } = data;
+    if (grading.isGraded) {
+      request.resource.maxPoints = grading.maxPoints || 100;
+    } else {
+      request.resource.maxPoints = 0;
     }
 
     return this.makeRequest(userId, classroom.courses.courseWork.create, request);
@@ -288,7 +294,6 @@ class GCL {
         dueDate: getGCLDate(dueTS),
         dueTime: getGCLTime(dueTS),
         workType: 'ASSIGNMENT',
-        maxPoints: data.maxPoints,
         individualStudentsOptions: {
           studentIds: data.studentIds,
         },
@@ -300,6 +305,13 @@ class GCL {
         scheduledTime: data.startDate,
         state: 'DRAFT',
       });
+    }
+
+    const { grading = {} } = data;
+    if (grading.isGraded) {
+      request.resource.maxPoints = grading.maxPoints || 100;
+    } else {
+      request.resource.maxPoints = 0;
     }
 
     return this.makeRequest(userId, classroom.courses.courseWork.create, request);
