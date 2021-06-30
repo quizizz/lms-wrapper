@@ -463,7 +463,7 @@ class GCL {
     let count = 0;
     do {
       count += 1;
-      const response = await this._getCourses(userId, { courseId, pageToken: nextPageToken });
+      const response = await this._getCourseTeachers(userId, { courseId, pageToken: nextPageToken });
       nextPageToken = response.nextPageToken,
       teachers.push(...(response.teachers || []));
     } while (nextPageToken);
