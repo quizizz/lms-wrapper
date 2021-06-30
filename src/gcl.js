@@ -9,6 +9,7 @@ const { addSeconds } = require('./helpers/utils');
 const { OAuth2 } = google.auth;
 const classroom = google.classroom('v1');
 const tokenClient = google.oauth2('v2');
+const admin = google.admin('directory_v1');
 
 function assign(obj, upd = {}) {
   return Object.assign({}, obj, upd);
@@ -428,6 +429,52 @@ class GCL {
       courseWorkId,
       id: subId,
     });
+  }
+
+  async _getCourses(userId, { pageToken }) {
+    const api = classroom.courses.list;
+    const request = { courseStates: 'ACTIVE', teacherId: 'me', pageToken, pageSize: 20 };
+    return this.makeRequest(userId, api, request);
+  };
+
+  async getPaginatedCourses(userId) {
+    const courses = [];
+    let nextPageToken;
+    let count = 0;
+    do {
+      count += 1;
+      const response = await this._getCourses(userId, { pageToken: nextPageToken });
+      nextPageToken = response.nextPageToken,
+      courses.push(...(response.courses || []));
+    } while (nextPageToken);
+
+    return courses;
+  }
+
+  async _getCourseTeachers(userId, { courseId, pageToken }) {
+    const api = classroom.courses.teachers.list;
+    const request = { courseId, pageToken, pageSize: 20 };
+    return this.makeRequest(userId, api, request);
+  };
+
+  async getPaginatedCourseTeachers(userId, { courseId }) {
+    const teachers = [];
+    let nextPageToken;
+    let count = 0;
+    do {
+      count += 1;
+      const response = await this._getCourses(userId, { courseId, pageToken: nextPageToken });
+      nextPageToken = response.nextPageToken,
+      teachers.push(...(response.teachers || []));
+    } while (nextPageToken);
+
+    return teachers;
+  }
+
+  async getOrgUnits(userId) {
+    const api = admin.orgunits.list;
+    const request = { customerId: 'my_customer' };
+    return this.makeRequest(userId, api, request);
   }
 }
 

@@ -467,6 +467,43 @@ class Schoology {
 
 		return results;
 	}
+
+  /**
+   * Mainly added to fetch user using building_id and school_uids
+   */
+  async getUsers(query) {
+    const users = await this.paginatedCollect({
+      url: `/v1/users`,
+      query
+    }, 'user');
+
+    return users;
+  }
+
+  /**
+   * Mainly added to fetch all courses for a school, also we can fetch course for a building by passing building_id
+   */
+  async getCourses(query) {
+    const courses = await this.paginatedCollect({
+      url: `/v1/courses`,
+      query
+    }, 'course');
+
+    return courses;
+  }
+
+  /**
+   * Mainly added to fetch all teacher for each sections
+   */
+  async listUsers({ sectionId, query = { 'type': ['admin'] } }) {
+    const users = await this.paginatedCollect({
+      url: `/v1/sections/${sectionId}/enrollments`,
+      method: 'GET',
+      query,
+    }, 'enrollment');
+
+    return users;
+  }
 }
 
 Schoology.SUBMISSION_STATE = {
