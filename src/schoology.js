@@ -506,7 +506,7 @@ class Schoology {
   }
 
   async getUser(id) {
-    const user = await this.makeRequest({
+    const {data: user} = await this.makeRequest({
       url: `/v1/users/${id}`,
       method: 'GET',
       headers: {
