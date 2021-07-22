@@ -504,6 +504,18 @@ class Schoology {
 
     return users;
   }
+
+  async getUser(id) {
+    const user = await this.makeRequest({
+      url: `/v1/users/${id}`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return user;
+  }
 }
 
 Schoology.SUBMISSION_STATE = {
