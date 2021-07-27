@@ -518,7 +518,7 @@ class Schoology {
   }
 
   async getBuilding(id) {
-    const { building } = await this.makeRequest({
+    const { data: { building } } = await this.makeRequest({
       url: `v1/schools/${id}/buildings`,
       method: 'GET',
       headers: {
