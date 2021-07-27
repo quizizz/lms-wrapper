@@ -516,6 +516,18 @@ class Schoology {
 
     return user;
   }
+
+  async getBuilding(id) {
+    const { building } = await this.makeRequest({
+      url: `v1/schools/${id}/buildings`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return building;
+  }
 }
 
 Schoology.SUBMISSION_STATE = {
