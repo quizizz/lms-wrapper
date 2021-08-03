@@ -387,11 +387,11 @@ class Canvas {
   /**
    * Mainly added to fetch Teacher and ta, use enrollment_type in data
    */
-  async getAccountUsers(id, query = {enrollment_type: ['teacher', 'ta']}) {
+  async getAccountUsers(id, data = {enrollment_type: ['teacher', 'ta']}) {
     const users = await paginatedCollect(this, {
       url: `/api/v1/accounts/${id}/users`,
       method: 'GET',
-      query,
+      data,
     });
     return users;
   }
