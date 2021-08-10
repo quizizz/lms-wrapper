@@ -375,6 +375,26 @@ class Canvas {
     });
     return grades;
   }
+
+  async getAccounts() {
+    const accounts = await paginatedCollect(this, {
+      url: `/api/v1/manageable_accounts`,
+      method: 'GET',
+    });
+    return accounts;
+  }
+
+  /**
+   * Mainly added to fetch Teacher and ta, use enrollment_type in data
+   */
+  async getAccountUsers(id, data = {enrollment_type: ['teacher', 'ta']}) {
+    const users = await paginatedCollect(this, {
+      url: `/api/v1/accounts/${id}/users`,
+      method: 'GET',
+      data,
+    });
+    return users;
+  }
 }
 
 Canvas.SUBMISSION_STATE = {

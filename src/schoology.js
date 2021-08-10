@@ -467,6 +467,79 @@ class Schoology {
 
 		return results;
 	}
+
+  /**
+   * Mainly added to fetch user using building_id and school_uids
+   */
+  async getUsers(query) {
+    const users = await this.paginatedCollect({
+      url: `/v1/users`,
+      query
+    }, 'user');
+
+    return users;
+  }
+
+  /**
+   * Mainly added to fetch all courses for a school, also we can fetch course for a building by passing building_id
+   */
+  async getCourses(query) {
+    const courses = await this.paginatedCollect({
+      url: `/v1/courses`,
+      query
+    }, 'course');
+
+    return courses;
+  }
+
+  /**
+   * Mainly added to fetch all teacher for each sections
+   */
+  async listUsers({ sectionId, query = { 'type': ['admin'] } }) {
+    const users = await this.paginatedCollect({
+      url: `/v1/sections/${sectionId}/enrollments`,
+      method: 'GET',
+      query,
+    }, 'enrollment');
+
+    return users;
+  }
+
+  async getUser(id) {
+    const {data: user} = await this.makeRequest({
+      url: `/v1/users/${id}`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return user;
+  }
+
+  async getBuilding(id) {
+    const { data: { building } } = await this.makeRequest({
+      url: `v1/schools/${id}/buildings`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return building;
+  }
+
+  async getSchool(id) {
+    const { data: school } = await this.makeRequest({
+      url: `v1/schools/${id}`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return school;
+  }
 }
 
 Schoology.SUBMISSION_STATE = {
