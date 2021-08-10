@@ -275,13 +275,11 @@ class Canvas {
     return this.listStudents(args);
   }
 
-  async createAssignment({ courseId, assignmentName, assignmentDescription, dueAt, unlockAt, studentIds = [] }) {
+  async createAssignment({ courseId, assignmentName, assignmentDescription, dueAt, unlockAt, studentIds = [], options: {} }) {
     const payload = {
       name: assignmentName,
       submission_types: ['online_url'],
-      grading_type: 'points',
       description: assignmentDescription,
-      points_possible: 100,
       published: true,
     };
 
@@ -300,6 +298,14 @@ class Canvas {
           "student_ids": studentIds
         }
       ];
+    }
+
+    const { grading = {} } = options;
+    if (grading.isGraded) {
+      payload.grading_type = 'points';
+      payload.points_possible = grading.maxPoints || 100;
+    } else {
+      payload.grading_type = 'not_graded';
     }
 
     const { data: assignment } = await this.makeRequest({
