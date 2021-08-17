@@ -540,6 +540,12 @@ class Schoology {
 
     return school;
   }
+
+  async getInfo(data) {
+    const response = await this.makeRequest(data);
+
+    return response;
+  }
 }
 
 Schoology.SUBMISSION_STATE = {
