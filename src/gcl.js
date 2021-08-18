@@ -93,6 +93,7 @@ class GCL {
       const completeParams = Object.assign({}, params, {
         auth,
       });
+      console.log(completeParams);
       return promiseMe(api)(completeParams);
     }).then(response => {
       const newToken = auth.credentials;
@@ -498,6 +499,9 @@ class GCL {
         'courseId': courseId
       },
     }
+
+    
+  
 
     const cloudPubsubTopic = {
       "topicName": 'gcl_auto_sync_topic_test'
