@@ -488,37 +488,37 @@ class GCL {
     return result;
   }
 
-  async createRegistration(userId,courseId) {
+  createRegistration(userId,courseId) {
 
-    userId = userId != "" ? userId : "60b363838c8710001bcd4282"
-    courseId = courseId != "" ? courseId : "377719254612"
+    // userId = userId != "" ? userId : "60b363838c8710001bcd4282"
+    // courseId = courseId != "" ? courseId : "377719254612"
 
-    const feed = {
-      'feedType': 'COURSE_ROSTER_CHANGES',
-      'courseRosterChangesInfo': {
-        'courseId': courseId
-      },
-    }
+    // const feed = {
+    //   'feedType': 'COURSE_ROSTER_CHANGES',
+    //   'courseRosterChangesInfo': {
+    //     'courseId': courseId
+    //   },
+    // }
 
     
   
 
-    const cloudPubsubTopic = {
-      "topicName": 'gcl_auto_sync_topic_test'
-    }
-    const registrationId = this.makeid(10);
-    console.log(registrationId);
-    const regsitraionObj = {
-      "registrationId": registrationId,
-      "feed": feed,
-      'cloudPubsubTopic': cloudPubsubTopic,
-      'expiryTime': '2021-08-19T15:01:23Z'
-    }
+    // const cloudPubsubTopic = {
+    //   "topicName": 'gcl_auto_sync_topic_test'
+    // }
+    // const registrationId = this.makeid(10);
+    // console.log(registrationId);
+    // const regsitraionObj = {
+    //   "registrationId": registrationId,
+    //   "feed": feed,
+    //   'cloudPubsubTopic': cloudPubsubTopic,
+    //   'expiryTime': '2021-08-19T15:01:23Z'
+    // }
 
-    console.log(regsitraionObj);
+    // console.log(regsitraionObj);
 
     const api = classroom.registrations.create;
-    return this.makeRequest(userId, api, regsitraionObj);
+    return api;
 
   }
 
