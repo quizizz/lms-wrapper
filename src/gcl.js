@@ -502,13 +502,16 @@ class GCL {
     const cloudPubsubTopic = {
       "topicName": 'gcl_auto_sync_topic_test'
     }
-
+    const registrationId = this.makeid(10);
+    console.log(registrationId);
     const regsitraionObj = {
-      "registrationId": this.makeid(10),
+      "registrationId": registrationId,
       "feed": feed,
       'cloudPubsubTopic': cloudPubsubTopic,
       'expiryTime': '2021-08-19T15:01:23Z'
     }
+
+    console.log(regsitraionObj);
 
     const api = classroom.registrations.create;
     return this.makeRequest(userId, api, regsitraionObj);
