@@ -483,14 +483,14 @@ class Schoology {
   /**
    * Mainly added to fetch all courses for a school, also we can fetch course for a building by passing building_id
    */
-  async getCourses(query) {
-    const courses = await this.paginatedCollect({
-      url: `/v1/courses`,
-      query
-    }, 'course');
+  // async getCourses(query) {
+  //   const courses = await this.paginatedCollect({
+  //     url: `/v1/courses`,
+  //     query
+  //   }, 'course');
 
-    return courses;
-  }
+  //   return courses;
+  // }
 
   /**
    * Mainly added to fetch all teacher for each sections
