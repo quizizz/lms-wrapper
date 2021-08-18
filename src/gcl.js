@@ -507,7 +507,7 @@ class GCL {
       'expiryTime': '2021-08-19T15:01:23Z'
     }
 
-    const api = classroom.registrions.create;
+    const api = classroom.registraions.create;
     return this.makeRequest(userId, api, regsitraionObj);
 
   }
