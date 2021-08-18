@@ -476,6 +476,42 @@ class GCL {
     const request = { customerId: 'my_customer' };
     return this.makeRequest(userId, api, request);
   }
+
+  makeid(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
+
+  async createRegistration() {
+
+    const feed = {
+      'feedType': 'COURSE_ROSTER_CHANGES',
+      'courseRosterChangesInfo': {
+        'courseId': '377719254612'
+      },
+    }
+
+    const cloudPubsubTopic = {
+      "topicName": 'gcl_auto_sync_topic_test'
+    }
+
+    const regsitraionObj = {
+      "registrationId": this.makeid(10),
+      "feed": feed,
+      'cloudPubsubTopic': cloudPubsubTopic,
+      'expiryTime': '2021-08-19T15:01:23Z'
+    }
+
+    const api = classroom.registrions.create;
+    return this.makeRequest(userId, api, regsitraionObj);
+
+  }
+
 }
 
 module.exports = GCL;
