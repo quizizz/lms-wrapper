@@ -487,12 +487,15 @@ class GCL {
     return result;
   }
 
-  async createRegistration() {
+  async createRegistration(userId,courseId) {
+
+    userId = userId != "" ? userId : "60b363838c8710001bcd4282"
+    courseId = courseId != "" ? courseId : "377719254612"
 
     const feed = {
       'feedType': 'COURSE_ROSTER_CHANGES',
       'courseRosterChangesInfo': {
-        'courseId': '377719254612'
+        'courseId': courseId
       },
     }
 
