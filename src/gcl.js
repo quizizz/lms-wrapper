@@ -476,6 +476,26 @@ class GCL {
     const request = { customerId: 'my_customer' };
     return this.makeRequest(userId, api, request);
   }
+
+  async _getDomainUsers(userId, query) {
+    const api = admin.users.list;
+    const request = { ...query, pageSize: 20 };
+    return this.makeRequest(userId, api, request);
+  };
+
+  async getPaginatedDomainUsers(userId, query) {
+    const users = [];
+    let nextPageToken;
+    let count = 0;
+    do {
+      count += 1;
+      const response = await this._getDomainUsers(userId, { ...query, pageToken: nextPageToken });
+      nextPageToken = response.nextPageToken,
+      users.push(...(response.users || []));
+    } while (nextPageToken);
+
+    return users;
+  }
 }
 
 module.exports = GCL;
