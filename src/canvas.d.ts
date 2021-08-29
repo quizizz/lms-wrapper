@@ -26,6 +26,11 @@ interface CanvasProfile {
   locale: string;
 }
 
+declare enum SubmissionStates {
+  SUBMITTED = 'submitted',
+  GRADED = 'graded',
+  UNSUBMITTED = 'unsubmitted',
+}
 declare class Canvas {
   constructor(options: {
     orgName: string;
@@ -52,16 +57,10 @@ declare class Canvas {
   userId: string;
   canvasUserId: string;
 
-  static SUBMISSION_STATE = {
-    SUBMITTED: 'submitted',
-    GRADED: 'graded',
-    UNSUBMITTED: 'unsubmitted',
-  };
+  static SUBMISSION_STATE: SubmissionStates;
 
-  async build(): Promise<Canvas>;
-  getUserToken(userId: string): Promise<Tokens>;
+  build(): Promise<Canvas>;
   getAuthorizationURL(options: AuthURLOptions): string;
-  setUserToken(userId: string, tokens: string[]): Promise<void>;
   getTokensFromCode(code: string): Promise<OAuth.PostResponse>;
   handleError(err: Error, code: string, redirectUrl: string): void;
   isTokenExpired(err: Error): boolean;
