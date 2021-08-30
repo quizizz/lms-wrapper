@@ -93,7 +93,6 @@ class GCL {
       const completeParams = Object.assign({}, params, {
         auth,
       });
-      console.log(completeParams);
       return promiseMe(api)(completeParams);
     }).then(response => {
       const newToken = auth.credentials;
@@ -339,6 +338,13 @@ class GCL {
     return students;
   }
 
+  async getSingleCourseStudent(teacherId, courseId, userId) {
+    const api = classroom.courses.students.get;
+    const request = { courseId, userId };
+    console.log(courseId, userId);
+    return this.makeRequest(teacherId,api,request);
+  }
+
   getStudentSubmission(userId, { courseId, courseWorkId }) {
     const info = { userId, courseId, courseWorkId };
     const api = classroom.courses.courseWork.studentSubmissions.list;
@@ -478,50 +484,38 @@ class GCL {
     return this.makeRequest(userId, api, request);
   }
 
-  makeid(length) {
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-  }
 
-  createRegistration(userId,courseId) {
-
-    // userId = userId != "" ? userId : "60b363838c8710001bcd4282"
-    // courseId = courseId != "" ? courseId : "377719254612"
-
-    // const feed = {
-    //   'feedType': 'COURSE_ROSTER_CHANGES',
-    //   'courseRosterChangesInfo': {
-    //     'courseId': courseId
-    //   },
-    // }
-
+  async createRegistration(userId,courseId) {
     
-  
-
-    // const cloudPubsubTopic = {
-    //   "topicName": 'gcl_auto_sync_topic_test'
-    // }
-    // const registrationId = this.makeid(10);
-    // console.log(registrationId);
-    // const regsitraionObj = {
-    //   "registrationId": registrationId,
-    //   "feed": feed,
-    //   'cloudPubsubTopic': cloudPubsubTopic,
-    //   'expiryTime': '2021-08-19T15:01:23Z'
-    // }
-
-    // console.log(regsitraionObj);
-
-    const api = classroom.registrations.create;
-    return api;
-
+    const response = { 'status': false };
+    if(userId != '' && courseId != '') {
+      const api = classroom.registrations.create;
+      const feed = {
+        'feedType': 'COURSE_ROSTER_CHANGES',
+        'courseRosterChangesInfo': {
+          'courseId': courseId
+        },
+      }
+      const cloudPubsubTopic = {
+        "topicName": 'projects/quizizz-dev/topics/gcl_auto_sync_topic_test2'
+      }
+      const registration = {
+        'feed':feed,
+        'cloudPubsubTopic': cloudPubsubTopic
+      }
+      try {
+        const registeredObject = await this.makeRequest(userId,api, { resource: registration });
+        console.log(registeredObject);
+        return Object.assign({ 'status': true }, registeredObject);
+      }
+      catch(ex) {
+        console.log('error')
+        return response;
+      }
+    } else {
+      return response;
+    }
   }
-
 }
 
 module.exports = GCL;
