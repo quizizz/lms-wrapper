@@ -505,15 +505,24 @@ class GCL {
       }
       try {
         const registeredObject = await this.makeRequest(userId,api, { resource: registration });
-        console.log(registeredObject);
         return Object.assign({ 'status': true }, registeredObject);
       }
       catch(ex) {
-        console.log('error')
         return response;
       }
     } else {
       return response;
+    }
+  }
+  
+  async deleteRegistration(userId, registrationId) {
+    if(registrationId != null && registrationId != '') {
+        const api = classroom.registrations.deleteRegistration;
+        const query = {
+          registrationId: registrationId,
+        }
+        const response = await this.makeRequest(userId, api, { resource: query });
+        console.log(response);
     }
   }
 }
