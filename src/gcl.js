@@ -514,15 +514,17 @@ class GCL {
       return response;
     }
   }
-  
+
   async deleteRegistration(userId, registrationId) {
+    console.log(userId, registrationId);
     if(registrationId != null && registrationId != '') {
-        const api = classroom.registrations.deleteRegistration;
+        const api = classroom.registrations.delete;
         const query = {
-          registrationId: registrationId,
+          'registrationId': registrationId,
         }
-        const response = await this.makeRequest(userId, api, { resource: query });
-        console.log(response);
+        console.log(query);
+        const response = await this.makeRequest(userId, api, query);
+        return response;
     }
   }
 }
