@@ -341,7 +341,6 @@ class GCL {
   async getSingleCourseStudent(teacherId, courseId, userId) {
     const api = classroom.courses.students.get;
     const request = { courseId, userId };
-    console.log(courseId, userId);
     return this.makeRequest(teacherId,api,request);
   }
 
@@ -485,44 +484,34 @@ class GCL {
   }
 
 
-  async createRegistration(userId,courseId) {
-    
-    const response = { 'status': false };
+  async createRegistration({ userId, courseId, topicName}) {
+    const response = { status: false };
     if(userId != '' && courseId != '') {
       const api = classroom.registrations.create;
-      const feed = {
-        'feedType': 'COURSE_ROSTER_CHANGES',
-        'courseRosterChangesInfo': {
-          'courseId': courseId
-        },
-      }
-      const cloudPubsubTopic = {
-        "topicName": 'projects/quizizz-dev/topics/gcl_auto_sync_topic_test2'
-      }
       const registration = {
-        'feed':feed,
-        'cloudPubsubTopic': cloudPubsubTopic
+        feed: {
+          feedType: 'COURSE_ROSTER_CHANGES',
+          courseRosterChangesInfo: {
+            courseId,
+          },
+        },
+        cloudPubsubTopic: {
+          topicName,
+        }
       }
-      try {
-        const registeredObject = await this.makeRequest(userId,api, { resource: registration });
-        return Object.assign({ 'status': true }, registeredObject);
-      }
-      catch(ex) {
-        return response;
-      }
+      const registeredObject = await this.makeRequest(userId, api, { resource: registration });
+      return Object.assign({ status: true }, registeredObject);
     } else {
       return response;
     }
   }
 
-  async deleteRegistration(userId, registrationId) {
-    console.log(userId, registrationId);
+  async deleteRegistration({userId, registrationId}) {
     if(registrationId != null && registrationId != '') {
         const api = classroom.registrations.delete;
         const query = {
-          'registrationId': registrationId,
+          registrationId
         }
-        console.log(query);
         const response = await this.makeRequest(userId, api, query);
         return response;
     }
