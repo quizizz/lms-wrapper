@@ -486,6 +486,7 @@ class GCL {
 
   async createRegistration({ userId, courseId, topicName}) {
     const response = { status: false };
+    logger.app.info('LMS Wrapper:',userId, courseId, topicName)
     if(userId != '' && courseId != '') {
       const api = classroom.registrations.create;
       const registration = {
