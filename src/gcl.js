@@ -486,7 +486,7 @@ class GCL {
 
   async createRegistration({ userId, courseId, topicName}) {
     const response = { status: false };
-    logger.app.info('LMS Wrapper: Params',userId, courseId, topicName);
+    console.log('LMS Wrapper: Params',userId, courseId, topicName);
     if(userId != '' && courseId != '') {
       const api = classroom.registrations.create;
       const registration = {
@@ -500,9 +500,9 @@ class GCL {
           topicName,
         }
       }
-      logger.app.info('LMS Wrapper: Object',registration);
+      console.log('LMS Wrapper: Object',registration);
       const registeredObject = await this.makeRequest(userId, api, { resource: registration });
-      logger.app.info('LMS Wrapper:Result',registeredObject);
+      console.log('LMS Wrapper:Result',registeredObject);
       return Object.assign({ status: true }, registeredObject);
     } else {
       return response;
