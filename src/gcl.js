@@ -5,7 +5,7 @@ const { google } = require('googleapis');
 const LMSError = require('./error');
 const oauth2 = require('./oauth2');
 const { addSeconds } = require('./helpers/utils');
-
+const is = require('is_js');
 const { OAuth2 } = google.auth;
 const classroom = google.classroom('v1');
 const tokenClient = google.oauth2('v2');
@@ -486,8 +486,7 @@ class GCL {
 
   async createRegistration({ userId, courseId, topicName}) {
     const response = { status: false };
-    console.log('LMS Wrapper: Params',userId, courseId, topicName);
-    if(userId != '' && courseId != '') {
+    if(is.string(userId) && is.string(courseId)) {
       const api = classroom.registrations.create;
       const registration = {
         feed: {
@@ -500,23 +499,24 @@ class GCL {
           topicName,
         }
       }
-      console.log('LMS Wrapper: Object',registration);
       const registeredObject = await this.makeRequest(userId, api, { resource: registration });
-      console.log('LMS Wrapper:Result',registeredObject);
       return Object.assign({ status: true }, registeredObject);
     } else {
+      throw new LMSError('Not Valid userId or courseId', 'gcl.INVALID_PARAMS', {userId, courseId});
       return response;
     }
   }
 
   async deleteRegistration({userId, registrationId}) {
-    if(registrationId != null && registrationId != '') {
+    if(is.string(registrationId) && is.string(userId)) {
         const api = classroom.registrations.delete;
         const query = {
           registrationId
         }
         const response = await this.makeRequest(userId, api, query);
         return response;
+    } else {
+      throw new LMSError('Not Valid userId or registrationId', 'gcl.INVALID_PARAMS', {userId, registrationId});
     }
   }
 }
