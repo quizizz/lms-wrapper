@@ -496,6 +496,11 @@ class GCL {
 
     return users;
   }
+
+  async createUserWatchChannel(userId, request) {
+    const api = admin.users.watch;
+    return this.makeRequest(userId, api, request);
+  };
 }
 
 module.exports = GCL;
