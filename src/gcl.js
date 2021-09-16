@@ -501,6 +501,11 @@ class GCL {
     const api = admin.users.watch;
     return this.makeRequest(userId, api, request);
   };
+
+  async createClassroomRegistration(userId, request) {
+    const api = classroom.registrations.create;
+    return this.makeRequest(userId, api, request);
+  }
 }
 
 module.exports = GCL;
