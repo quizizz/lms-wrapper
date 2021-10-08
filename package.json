@@ -1,6 +1,6 @@
 {
   "name": "@quizizz/lms",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "Some LMS apis",
   "main": "src/index.js",
   "scripts": {
@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "chai": "4.1.2",
-    "hold-it": "^1.0.1",
-    "eslint": "^7.23.0"
+    "eslint": "^7.23.0",
+    "hold-it": "^1.0.1"
   }
 }
