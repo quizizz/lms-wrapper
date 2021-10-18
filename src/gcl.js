@@ -5,7 +5,7 @@ const { google } = require('googleapis');
 const LMSError = require('./error');
 const oauth2 = require('./oauth2');
 const { addSeconds } = require('./helpers/utils');
-
+const is = require('is_js');
 const { OAuth2 } = google.auth;
 const classroom = google.classroom('v1');
 const tokenClient = google.oauth2('v2');
@@ -338,6 +338,12 @@ class GCL {
     return students;
   }
 
+  async getSingleCourseStudent(teacherId, courseId, userId) {
+    const api = classroom.courses.students.get;
+    const request = { courseId, userId };
+    return this.makeRequest(teacherId,api,request);
+  }
+
   getStudentSubmission(userId, { courseId, courseWorkId }) {
     const info = { userId, courseId, courseWorkId };
     const api = classroom.courses.courseWork.studentSubmissions.list;
@@ -495,6 +501,42 @@ class GCL {
     } while (nextPageToken);
 
     return users;
+  };
+
+  async createRegistration({ userId, courseId, topicName}) {
+    const response = { status: false };
+    if(is.string(userId) && is.string(courseId)) {
+      const api = classroom.registrations.create;
+      const registration = {
+        feed: {
+          feedType: 'COURSE_ROSTER_CHANGES',
+          courseRosterChangesInfo: {
+            courseId,
+          },
+        },
+        cloudPubsubTopic: {
+          topicName,
+        }
+      }
+      const registeredObject = await this.makeRequest(userId, api, { resource: registration });
+      return Object.assign({ status: true }, registeredObject);
+    } else {
+      throw new LMSError('Not Valid userId or courseId', 'gcl.INVALID_PARAMS', {userId, courseId});
+      return response;
+    }
+  }
+
+  async deleteRegistration({userId, registrationId}) {
+    if(is.string(registrationId) && is.string(userId)) {
+        const api = classroom.registrations.delete;
+        const query = {
+          registrationId
+        }
+        const response = await this.makeRequest(userId, api, query);
+        return response;
+    } else {
+      throw new LMSError('Not Valid userId or registrationId', 'gcl.INVALID_PARAMS', {userId, registrationId});
+    }
   }
 
   async createUserWatchChannel(userId, request) {

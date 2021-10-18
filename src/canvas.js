@@ -275,7 +275,7 @@ class Canvas {
     return this.listStudents(args);
   }
 
-  async createAssignment({ courseId, assignmentName, assignmentDescription, dueAt, unlockAt, studentIds = [], options: {} }) {
+  async createAssignment({ courseId, assignmentName, assignmentDescription, dueAt, unlockAt, studentIds = [], options = {} }) {
     const payload = {
       name: assignmentName,
       submission_types: ['online_url'],
