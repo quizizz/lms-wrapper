@@ -505,7 +505,7 @@ class Schoology {
   }
 
   makeRequest(requestConfig, errorHandler) {
-    return this.oAuth.makeRequest(requestConfig, errorHandler || this.handleError);
+    return this.oAuth.makeRequest(requestConfig, errorHandler || this.handleError.bind(this));
   }
 
   async paginatedCollect (requestConfig, keyWithPaginatedResults) {
