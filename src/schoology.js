@@ -447,7 +447,7 @@ class Schoology {
   /**
    * Handles some schoology API errors
    */
-  handleError(error, requestConfig = {}, retry = 0) {
+  async handleError(error, requestConfig = {}, retry = 0) {
     if (error.response) {
       const isAccessTokenExpired = this.isTokenExpired(error);
       let errorObj = {

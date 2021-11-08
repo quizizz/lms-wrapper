@@ -158,7 +158,7 @@ class OAuth {
 			
 			return { data, status };
 		} catch (error) {
-			errorHandler(error);
+			errorHandler(error, requestConfig);
 
 			this.errorHandler(error);
 		}
