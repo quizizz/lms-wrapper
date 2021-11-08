@@ -4,6 +4,7 @@ const is = require('is_js');
 
 const OAuth = require('./oauth');
 const LMSError = require('./error');
+const { isEmpty } = require('lodash');
 
 /**
  * @class Schoology
@@ -96,6 +97,10 @@ class Schoology {
         headers: {
           'Content-Type': 'application/json',
         },
+        errorObj: {
+          cause: 'Unable to fetch user profile',
+          type: 'schoology.USER_PROFILE_ERROR',
+        },
       });
       this.schoologyUserId = resp.data.id;
       return resp.data;
@@ -129,7 +134,11 @@ class Schoology {
 
     const courses = await this.paginatedCollect({
       url: `v1/users/${schoologyProfileId}/sections`,
-      method: 'GET'
+      method: 'GET',
+      errorObj: {
+        cause: 'Unable to fetch user courses',
+        type: 'schoology.USER_FETCH_COURSES_ERROR',
+      },
     }, 'section');
 
     return _.map(courses, (course) => ({
@@ -142,6 +151,10 @@ class Schoology {
     const sections = await this.paginatedCollect({
       url: `/v1/courses/${courseId}/sections`,
       method: 'GET',
+      errorObj: {
+        cause: `Unable to fetch courses`,
+        type: 'schoology.FETCH_COURSES_ERROR',
+      },
     }, 'section');
 
     return sections;
@@ -157,6 +170,10 @@ class Schoology {
         body,
         ...args
       },
+      errorObj: {
+        cause: `Unable to submit the announcement`,
+        type: 'schoology.POST_ANNOUNCEMENT_ERROR',
+      },
     });
   }
 
@@ -165,6 +182,10 @@ class Schoology {
       url: `/v1/sections/${sectionId}/enrollments`,
       method: 'GET',
       query: { 'type': ['member'] },
+      errorObj: {
+        cause: `Unable to fetch the student for the course`,
+        type: 'schoology.FETCH_COURSE_STUDENT_ERROR',
+      },
     }, 'enrollment');
 
     return students;
@@ -179,6 +200,10 @@ class Schoology {
     const response = await this.makeRequest({
       url: 'v1/app-user-info',
       method: 'GET',
+      errorObj: {
+        cause: `Unable to fetch the user`,
+        type: 'schoology.FETCH_TOKEN_ERROR',
+      },
     });
     this.schoologyProfileId = response.data.api_uid;
 
@@ -191,6 +216,10 @@ class Schoology {
     const response = await this.makeRequest({
       url: `v1/users/${userProfileId}`,
       method: 'GET',
+      errorObj: {
+        cause: `Unable to fetch the user profile`,
+        type: 'schoology.FETCH_USER_ERROR',
+      },
     });
 
     return response.data;
@@ -223,6 +252,10 @@ class Schoology {
       url: `/v1/sections/${sectionId}/assignments`,
       method: 'POST',
       data: payload,
+      errorObj: {
+        cause: `Unable to create the assignment`,
+        type: 'schoology.POST_ASSIGNMENT_ERROR',
+      },
     });
 
     return assignment.data;
@@ -234,7 +267,11 @@ class Schoology {
       method: 'POST',
       data: {
         body: submissionUrl
-      }
+      },
+      errorObj: {
+        cause: `Unable to submit the assignment`,
+        type: 'schoology.POST_ASSIGNMENT_ERROR',
+      },
     });
     return submission;
   }
@@ -255,7 +292,11 @@ class Schoology {
             }
           ]
         }
-      }
+      },
+      errorObj: {
+        cause: `Unable to add the grade for assignment submitted`,
+        type: 'schoology.POST_ASSIGNMENT_GRADE_ERROR',
+      },
     });
 
     return graded;
@@ -271,7 +312,11 @@ class Schoology {
 
   async listSubmissions({ sectionId, assignmentId}) {
     const submissions = await this.paginatedCollect({
-      url: `/v1/sections/${sectionId}/submissions/${assignmentId}/`
+      url: `/v1/sections/${sectionId}/submissions/${assignmentId}/`,
+      errorObj: {
+        cause: `Unable to fetch the list of submissions`,
+        type: 'schoology.FETCH_SUBMISSIONS_ERROR',
+      },
     }, 'revision');
 
     return submissions;
@@ -285,6 +330,10 @@ class Schoology {
         grades: {
           grade: userGradesAndComments
         },
+      },
+      errorObj: {
+        cause: `Unable to grade the users submission`,
+        type: 'schoology.POST_ASSIGNMENT_GRADE_ERROR',
       },
     });
 
@@ -307,6 +356,10 @@ class Schoology {
       url: `/v1/sections/${sectionId}/grades`,
       method: 'GET',
       query,
+      errorObj: {
+        cause: `Unable to fetch the list of grades of course`,
+        type: 'schoology.FETCH_COURSE_GRADE_ERROR',
+      },
     });
 
     return response.data;
@@ -337,7 +390,11 @@ class Schoology {
   async getAllGradeCategoriesForSection({ sectionId }) {
     const response = await this.makeRequest({
       url: `/v1/sections/${sectionId}/grading_categories`,
-      type: 'GET'
+      type: 'GET',
+      errorObj: {
+        cause: `Unable to fetch the list of grading categories`,
+        type: 'schoology.FETCH_GRADING_CATEGORY_ERROR',
+      },
     });
 
     return _.get(response, 'data.grading_category', []);
@@ -366,6 +423,10 @@ class Schoology {
       url: `/v1/sections/${sectionId}/grading_categories`,
       method: 'POST',
       data: payload,
+      errorObj: {
+        cause: `Unable to create new grading category for course`,
+        type: 'schoology.POST_GRADING_CATEGORY_ERROR',
+      },
     });
 
     const createdCategories = response.data.grading_category;
@@ -386,15 +447,22 @@ class Schoology {
   /**
    * Handles some schoology API errors
    */
-  handleError(error) {
+  handleError(error, requestConfig = {}, retry = 0) {
     if (error.response) {
       const isAccessTokenExpired = this.isTokenExpired(error);
-
+      let errorObj = {
+        cause: 'An error occured',
+        type: 'schoology.UKW',
+      };
       if ( isAccessTokenExpired ) {
         throw new LMSError('Access token expired', 'schoology.EXPIRED_TOKEN', {
           message: error.message,
           response: error.response,
         });
+      }
+
+      if (!isEmpty(requestConfig)) {
+        errorObj = requestConfig.errorObj;
       }
 
       switch (error.response.status) {
@@ -404,15 +472,22 @@ class Schoology {
             message: error.message,
             body: error.response.body,
           });
-
+        case 500:
+          if (retries >= 2) {
+            throw new LMSError('Tried to refresh token 2 times and failed', 'canvas.TOO_MANY_RETRIES', {
+              userId: this.userId,
+            });
+          }
+          const resp = await this.makeRequest(requestConfig, retries + 1);
+          return resp;
         default:
-          throw new LMSError('An error occured', 'schoology.UKW', {
+          throw new LMSError(errorObj.cause, errorObj.type, {
             message: error.message,
             stack: error.stack,
           });
       }
     } else {
-      throw new LMSError('An error occured', 'schoology.UKW', {
+      throw new LMSError(errorObj.cause, errorObj.type, {
         message: error.message,
       });
     }
@@ -430,7 +505,7 @@ class Schoology {
   }
 
   makeRequest(requestConfig, errorHandler) {
-    return this.oAuth.makeRequest(requestConfig, errorHandler);
+    return this.oAuth.makeRequest(requestConfig, errorHandler || this.handleError);
   }
 
   async paginatedCollect (requestConfig, keyWithPaginatedResults) {
@@ -474,7 +549,11 @@ class Schoology {
   async getUsers(query) {
     const users = await this.paginatedCollect({
       url: `/v1/users`,
-      query
+      query,
+      errorObj: {
+        cause: `Unable to fetch users for school`,
+        type: 'schoology.FETCH_USERS_ERROR',
+      },
     }, 'user');
 
     return users;
@@ -500,6 +579,10 @@ class Schoology {
       url: `/v1/sections/${sectionId}/enrollments`,
       method: 'GET',
       query,
+      errorObj: {
+        cause: `Unable to fetch enrollments for course`,
+        type: 'schoology.FETCH_COURSE_ENROLLMENT_ERROR',
+      },
     }, 'enrollment');
 
     return users;
@@ -511,6 +594,10 @@ class Schoology {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+      },
+      errorObj: {
+        cause: `Unable to fetch USER`,
+        type: 'schoology.FETCH_USER_ERROR',
       },
     });
 
@@ -524,6 +611,10 @@ class Schoology {
       headers: {
         'Content-Type': 'application/json',
       },
+      errorObj: {
+        cause: `Unable to fetch building for school`,
+        type: 'schoology.FETCH_BUILDING_ERROR',
+      },
     });
 
     return building;
@@ -535,6 +626,10 @@ class Schoology {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+      },
+      errorObj: {
+        cause: `Unable to fetch school`,
+        type: 'schoology.FETCH_SCHOOL_ERROR',
       },
     });
 

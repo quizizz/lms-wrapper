@@ -411,6 +411,7 @@ class Canvas {
       throw new LMSError('Unable to fetch user profile', 'canvas.USER_PROFILE_ERROR', {
         userId: this.userId,
         id,
+        err,
       });
     }
   }
