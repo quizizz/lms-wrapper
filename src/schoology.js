@@ -1,10 +1,10 @@
-const axios = require('axios');
 const _ = require('lodash');
 const is = require('is_js');
 
 const OAuth = require('./oauth');
 const LMSError = require('./error');
-const { isEmpty } = require('lodash');
+const debug = require('debug')('q:lms:schoology');
+
 
 /**
  * @class Schoology
@@ -40,7 +40,6 @@ class Schoology {
       nonceLength: 16,
       requestToken,
       accessToken,
-      errorHandler: this.handleError.bind(this)
     });
   }
 
@@ -55,74 +54,64 @@ class Schoology {
    * Returns a URL used to initiate the authorization process with schoology and fetch
    * the authorization code
    */
-   async getAuthorizationURL(options = {}) {
+  async getAuthorizationURL() {
     try {
       const result = await this.oAuth.getRequestTokens('/v1/oauth/request_token');
       const tokenData = result.response;
 
       await this.cacheRequestToken(tokenData);
 
-      return OAuth.makeURL( this.hostedUrl, '/oauth/authorize', {
+      return OAuth.makeURL(this.hostedUrl, '/oauth/authorize', {
         'oauth_token': tokenData.token,
         'oauth_callback': this.redirectUri,
-      } )
-    } catch ( error ) {
-      this.handleError(error)
+      });
+    } catch (error) {
+      this.handleError(error, {
+        url: '/v1/oauth/request_token',
+        action: 'getAuthorizationURL',
+      });
     }
   }
 
   /**
    * Fetches the access and refresh tokens for a valid authorization code
    */
-   async getAccessTokens( storeUserAccessTokens = false ) {
+  async getAccessTokens(storeUserAccessTokens = false) {
+    const apiPath = '/v1/oauth/access_token';
     try {
-      const result = await this.oAuth.getAccessTokens('/v1/oauth/access_token');
+      const result = await this.oAuth.getAccessTokens(apiPath);
       const tokenData = result.response;
 
-      if ( storeUserAccessTokens ) {
-        await this.setUserAccessToken( tokenData );
+      if (storeUserAccessTokens) {
+        await this.setUserAccessToken(tokenData);
       }
 
       return tokenData;
-    } catch ( error ) {
-      this.handleError(error)
+    } catch (error) {
+      this.handleError(error, {
+        url: apiPath,
+        method: 'GET',
+      });
     }
   }
 
   async getProfile() {
-    try {
-      const resp = await this.makeRequest({
-        url: '/v1/users/me',
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        errorObj: {
-          cause: 'Unable to fetch user profile',
-          type: 'schoology.USER_PROFILE_ERROR',
-        },
-      });
-      this.schoologyUserId = resp.data.id;
-      return resp.data;
-    } catch(err) {
-      throw new LMSError('Unable to fetch user profile', 'schoology.USER_PROFILE_ERROR', {
-        userId: this.userId
-      });
-    }
+    const resp = await this.makeRequest({
+      url: '/v1/users/me',
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    this.schoologyUserId = resp.data.id;
+    return resp.data;
   }
 
   async getTokensFromUser() {
-    try {
-      const { accessToken, refreshToken, info } = await this.getUserToken(this.userId);
-      this.accessToken = accessToken;
-      this.refreshToken = refreshToken;
-      this.schoologyUserId = info.id;
-    } catch (err) {
-      throw new LMSError('Unable to fetch tokens from user', 'schoology.TOKEN_FETCH_ERROR', {
-        userId: this.userId,
-        message: err.message,
-      });
-    }
+    const { accessToken, refreshToken, info } = await this.getUserToken(this.userId);
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
+    this.schoologyUserId = info.id;
   }
 
   async getCourses() {
@@ -135,15 +124,11 @@ class Schoology {
     const courses = await this.paginatedCollect({
       url: `v1/users/${schoologyProfileId}/sections`,
       method: 'GET',
-      errorObj: {
-        cause: 'Unable to fetch user courses',
-        type: 'schoology.USER_FETCH_COURSES_ERROR',
-      },
     }, 'section');
 
     return _.map(courses, (course) => ({
       ...course,
-      name: `${course.course_title}: ${course.section_title}`
+      name: `${course.course_title}: ${course.section_title}`,
     }));
   }
 
@@ -151,10 +136,6 @@ class Schoology {
     const sections = await this.paginatedCollect({
       url: `/v1/courses/${courseId}/sections`,
       method: 'GET',
-      errorObj: {
-        cause: `Unable to fetch courses`,
-        type: 'schoology.FETCH_COURSES_ERROR',
-      },
     }, 'section');
 
     return sections;
@@ -168,11 +149,7 @@ class Schoology {
         published: 1,
         title,
         body,
-        ...args
-      },
-      errorObj: {
-        cause: `Unable to submit the announcement`,
-        type: 'schoology.POST_ANNOUNCEMENT_ERROR',
+        ...args,
       },
     });
   }
@@ -182,10 +159,6 @@ class Schoology {
       url: `/v1/sections/${sectionId}/enrollments`,
       method: 'GET',
       query: { 'type': ['member'] },
-      errorObj: {
-        cause: `Unable to fetch the student for the course`,
-        type: 'schoology.FETCH_COURSE_STUDENT_ERROR',
-      },
     }, 'enrollment');
 
     return students;
@@ -193,17 +166,13 @@ class Schoology {
 
   // TODO: Rename listStudents instead of using this
   getCourseStudents({ courseId }) {
-    return this.listStudents({sectionId: courseId});
+    return this.listStudents({ sectionId: courseId });
   }
 
   async getUserIdFromTokens() {
     const response = await this.makeRequest({
       url: 'v1/app-user-info',
       method: 'GET',
-      errorObj: {
-        cause: `Unable to fetch the user`,
-        type: 'schoology.FETCH_TOKEN_ERROR',
-      },
     });
     this.schoologyProfileId = response.data.api_uid;
 
@@ -216,10 +185,6 @@ class Schoology {
     const response = await this.makeRequest({
       url: `v1/users/${userProfileId}`,
       method: 'GET',
-      errorObj: {
-        cause: `Unable to fetch the user profile`,
-        type: 'schoology.FETCH_USER_ERROR',
-      },
     });
 
     return response.data;
@@ -239,7 +204,7 @@ class Schoology {
     }
 
     if (_.isArray(studentIds) && studentIds.length > 0) {
-      payload.assignees = studentIds
+      payload.assignees = studentIds;
     }
 
     const { grading = {} } = options;
@@ -252,10 +217,6 @@ class Schoology {
       url: `/v1/sections/${sectionId}/assignments`,
       method: 'POST',
       data: payload,
-      errorObj: {
-        cause: `Unable to create the assignment`,
-        type: 'schoology.POST_ASSIGNMENT_ERROR',
-      },
     });
 
     return assignment.data;
@@ -266,11 +227,7 @@ class Schoology {
       url: `/v1/sections/${sectionId}/submissions/${assignmentId}/create`,
       method: 'POST',
       data: {
-        body: submissionUrl
-      },
-      errorObj: {
-        cause: `Unable to submit the assignment`,
-        type: 'schoology.POST_ASSIGNMENT_ERROR',
+        body: submissionUrl,
       },
     });
     return submission;
@@ -289,13 +246,9 @@ class Schoology {
               type: 'assignment',
               assignment_id: assignmentId,
               enrollment_id: enrollmentId,
-            }
-          ]
-        }
-      },
-      errorObj: {
-        cause: `Unable to add the grade for assignment submitted`,
-        type: 'schoology.POST_ASSIGNMENT_GRADE_ERROR',
+            },
+          ],
+        },
       },
     });
 
@@ -310,13 +263,9 @@ class Schoology {
     return submission;
   }
 
-  async listSubmissions({ sectionId, assignmentId}) {
+  async listSubmissions({ sectionId, assignmentId }) {
     const submissions = await this.paginatedCollect({
       url: `/v1/sections/${sectionId}/submissions/${assignmentId}/`,
-      errorObj: {
-        cause: `Unable to fetch the list of submissions`,
-        type: 'schoology.FETCH_SUBMISSIONS_ERROR',
-      },
     }, 'revision');
 
     return submissions;
@@ -328,12 +277,8 @@ class Schoology {
       method: 'PUT',
       data: {
         grades: {
-          grade: userGradesAndComments
+          grade: userGradesAndComments,
         },
-      },
-      errorObj: {
-        cause: `Unable to grade the users submission`,
-        type: 'schoology.POST_ASSIGNMENT_GRADE_ERROR',
       },
     });
 
@@ -356,77 +301,62 @@ class Schoology {
       url: `/v1/sections/${sectionId}/grades`,
       method: 'GET',
       query,
-      errorObj: {
-        cause: `Unable to fetch the list of grades of course`,
-        type: 'schoology.FETCH_COURSE_GRADE_ERROR',
-      },
     });
 
     return response.data;
   }
 
   async getGradeCategoryForSection({ sectionId, id }) {
-    const errorHandler = (error) => {
-      if (!error.response) {
-        return;
-      }
-
-      if ( error.response.status === 404 ) {
+    try {
+      const response = await this.makeRequest({
+        url: `/v1/sections/${sectionId}/grading_categories/${id}`,
+        type: 'GET',
+      });
+      return response.data;
+    } catch (ex) {
+      if (ex.name === 'LMSError' && ex.cause.response && ex.cause.response.status === 404) {
         throw new LMSError('Grade category does not exist', 'schoology.INVALID_GRADE_CATEGORY', {
           sectionId,
-          gradeCategoryId: id
+          gradeCategoryId: id,
         });
       }
-    };
 
-    const response = await this.makeRequest({
-      url: `/v1/sections/${sectionId}/grading_categories/${id}`,
-      type: 'GET'
-    }, errorHandler);
-
-    return response.data;
+      throw ex;
+    }
   }
 
   async getAllGradeCategoriesForSection({ sectionId }) {
     const response = await this.makeRequest({
       url: `/v1/sections/${sectionId}/grading_categories`,
       type: 'GET',
-      errorObj: {
-        cause: `Unable to fetch the list of grading categories`,
-        type: 'schoology.FETCH_GRADING_CATEGORY_ERROR',
-      },
     });
 
     return _.get(response, 'data.grading_category', []);
   }
 
   async createGradeCategoriesForSection({ sectionId, categories = [] }) {
-    if ( _.isEmpty(categories) ) {
+    if (_.isEmpty(categories)) {
       throw new LMSError('Empty categories sent for creation', 'schoology.CANNOT_CREATE_GRADE_CATEGORIES', {
-        sectionId
+        sectionId,
       });
     }
 
     const gradingCategories = _.map(categories, (category) => ({
       title: category.title,
       calculation_type: 1,
-      default_grading_scale_id: 0
+      default_grading_scale_id: 0,
     }));
 
     const payload = {
       grading_categories: {
-        grading_category: gradingCategories
-      }
+        grading_category: gradingCategories,
+      },
     };
 
     const response = await this.makeRequest({
       url: `/v1/sections/${sectionId}/grading_categories`,
       method: 'POST',
       data: payload,
-      errorObj: {
-        cause: `Unable to create new grading category for course`,
-        type: 'schoology.POST_GRADING_CATEGORY_ERROR',
-      },
     });
 
     const createdCategories = response.data.grading_category;
@@ -436,7 +366,7 @@ class Schoology {
       throw new LMSError('Grade categories already exists', 'schoology.DUPLICATE_GRADE_CATEGORIES', {
         sectionId,
         createdCategories,
-        duplicateCategories
+        duplicateCategories,
       });
     }
 
@@ -447,113 +377,125 @@ class Schoology {
   /**
    * Handles some schoology API errors
    */
-  async handleError(error, requestConfig = {}, retry = 0) {
+  async handleError(error, request = {}, meta = {}) {
+    const { retries = 0 } = meta;
+
     if (error.response) {
       const isAccessTokenExpired = this.isTokenExpired(error);
-      let errorObj = {
-        cause: 'An error occured',
-        type: 'schoology.UKW',
-      };
-      if ( isAccessTokenExpired ) {
+      if (isAccessTokenExpired) {
         throw new LMSError('Access token expired', 'schoology.EXPIRED_TOKEN', {
+          request: request,
           message: error.message,
           response: error.response,
         });
       }
 
-      if (!isEmpty(requestConfig)) {
-        errorObj = requestConfig.errorObj;
-      }
-
       switch (error.response.status) {
         case 401:
-        case 403:
+        case 403: {
+          const { status, body, data } = error.response;
           throw new LMSError('Invalid Authorization header sent. Request not allowed', 'schoology.INVALID_OAUTH_HEADER', {
             message: error.message,
-            body: error.response.body,
+            request,
+            response: {
+              status, body, data,
+            },
           });
+        }
         case 500:
           if (retries >= 2) {
             throw new LMSError('Tried to refresh token 2 times and failed', 'canvas.TOO_MANY_RETRIES', {
               userId: this.userId,
+              
             });
           }
-          const resp = await this.makeRequest(requestConfig, retries + 1);
+          const resp = await this.makeRequest(request, { retries: retries + 1 });
           return resp;
-        default:
-          throw new LMSError(errorObj.cause, errorObj.type, {
+        default: {
+          const { status, body, data } = error.response;
+          throw new LMSError(`Schoology api call failed with status ${status}`, 'schoology.API_RESPONSE_FAILED', {
             message: error.message,
             stack: error.stack,
+            request,
+            response: { status, body, data },
           });
+        }
       }
-    } else {
-      throw new LMSError(errorObj.cause, errorObj.type, {
+    } else if (error.request) {
+      throw new LMSError('Schoology api failed to call', 'schoology.API_CALL_FAILED', {
         message: error.message,
+        stack: error.stack,
+        request,
       });
+    } else {
+      throw error;
     }
   }
 
   isTokenExpired(err) {
     // check condition for token expiration, schoology sends a `WWW-Authenticate` header if 401 is for token expiry
-    const headers = _.get( err, 'response.headers', {} );
+    const headers = _.get(err, 'response.headers', {});
 
-    if ( headers['www-authenticate'] ) {
+    if (headers['www-authenticate']) {
       return true;
     }
 
     return false;
   }
 
-  makeRequest(requestConfig, errorHandler) {
-    return this.oAuth.makeRequest(requestConfig, errorHandler || this.handleError.bind(this));
+  async makeRequest(request, meta = {}) {
+    try {
+      const result = await this.oAuth.makeRequest(request);
+      return result;
+    } catch (ex) {
+      this.handleError(ex, request, meta);
+    }
   }
 
-  async paginatedCollect (requestConfig, keyWithPaginatedResults) {
-		const results = [];
-		let pageUrl = requestConfig.url;
+  async paginatedCollect(requestConfig, keyWithPaginatedResults) {
+    const results = [];
+    let pageUrl = requestConfig.url;
+    let pages = 0;
 
-		while (true) {
-			const result = await this.oAuth.makeRequest({
+    while (pages < 1000) {
+      const result = await this.oAuth.makeRequest({
         ...requestConfig,
         url: pageUrl,
-			});
+      });
+      pages += 1;
 
-			const listData = _.get(result, `data.${keyWithPaginatedResults}`, []);
-			const nextPageUrl = _.get( result, 'data.links.next', '' );
-			const isThereANextPage = is.url(nextPageUrl);
-			const isResponseEmpty = (!result || _.isEmpty(result) || (result.data && _.isEmpty(result.data))) || _.isEmpty(listData);
+      const listData = _.get(result, `data.${keyWithPaginatedResults}`, []);
+      const nextPageUrl = _.get(result, 'data.links.next', '');
+      const isThereANextPage = is.url(nextPageUrl);
+      const isResponseEmpty = (!result || _.isEmpty(result) || (result.data && _.isEmpty(result.data))) || _.isEmpty(listData);
 
-			if (isResponseEmpty) {
-				break;
-			}
+      if (isResponseEmpty) {
+        break;
+      }
 
       pageUrl = nextPageUrl;
 
-			if (Array.isArray(listData)) {
-				results.push(...listData);
-			} else {
-				results.push(listData);
-			}
+      if (Array.isArray(listData)) {
+        results.push(...listData);
+      } else {
+        results.push(listData);
+      }
 
       if (!isThereANextPage) {
-				break;
-			}
-		}
+        break;
+      }
+    }
 
-		return results;
-	}
+    return results;
+  }
 
   /**
    * Mainly added to fetch user using building_id and school_uids
    */
   async getUsers(query) {
     const users = await this.paginatedCollect({
-      url: `/v1/users`,
+      url: '/v1/users',
       query,
-      errorObj: {
-        cause: `Unable to fetch users for school`,
-        type: 'schoology.FETCH_USERS_ERROR',
-      },
     }, 'user');
 
     return users;
@@ -579,25 +521,17 @@ class Schoology {
       url: `/v1/sections/${sectionId}/enrollments`,
       method: 'GET',
       query,
-      errorObj: {
-        cause: `Unable to fetch enrollments for course`,
-        type: 'schoology.FETCH_COURSE_ENROLLMENT_ERROR',
-      },
     }, 'enrollment');
 
     return users;
   }
 
   async getUser(id) {
-    const {data: user} = await this.makeRequest({
+    const { data: user } = await this.makeRequest({
       url: `/v1/users/${id}`,
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-      },
-      errorObj: {
-        cause: `Unable to fetch USER`,
-        type: 'schoology.FETCH_USER_ERROR',
       },
     });
 
@@ -611,10 +545,6 @@ class Schoology {
       headers: {
         'Content-Type': 'application/json',
       },
-      errorObj: {
-        cause: `Unable to fetch building for school`,
-        type: 'schoology.FETCH_BUILDING_ERROR',
-      },
     });
 
     return building;
@@ -627,10 +557,6 @@ class Schoology {
       headers: {
         'Content-Type': 'application/json',
       },
-      errorObj: {
-        cause: `Unable to fetch school`,
-        type: 'schoology.FETCH_SCHOOL_ERROR',
-      },
     });
 
     return school;
@@ -638,7 +564,6 @@ class Schoology {
 
   async getInfo(data) {
     const response = await this.makeRequest(data);
-
     return response;
   }
 }

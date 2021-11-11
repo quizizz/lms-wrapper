@@ -1,25 +1,14 @@
 {
-  "extends": [
-    "plugin:import/errors",
-    "plugin:import/warnings"
-  ],
+  "extends": ["plugin:import/errors", "plugin:import/warnings"],
   "settings": {
     "import/resolver": {
       "node": {
         "extensions": [".mjs", ".js", ".json"]
       }
     },
-    "import/extensions": [
-      ".js",
-      ".mjs",
-      ".jsx",
-    ],
-    "import/core-modules": [
-    ],
-    "import/ignore": [
-      "node_modules",
-      "\\.(coffee|scss|css|less|hbs|svg|json)$",
-    ],
+    "import/extensions": [".js", ".mjs", ".jsx"],
+    "import/core-modules": [],
+    "import/ignore": ["node_modules", "\\.(coffee|scss|css|less|hbs|svg|json)$"]
   },
   "env": {
     "es6": true,
@@ -27,10 +16,13 @@
     "mocha": true
   },
   "parserOptions": {
-    "ecmaVersion": 8
+    "ecmaVersion": 12
   },
   "rules": {
-    "import/no-unresolved": ["error", { "commonjs": true, "caseSensitive": true }],
+    "import/no-unresolved": [
+      "error",
+      { "commonjs": true, "caseSensitive": true }
+    ],
     "import/named": "error",
     "import/default": "off",
     "import/namespace": "off",
@@ -38,28 +30,31 @@
     "import/no-named-as-default": "error",
     "import/no-named-as-default-member": "error",
     "import/no-deprecated": "off",
-    "import/no-extraneous-dependencies": ["error", {
-      "devDependencies": [
-        "test/**",
-        "tests/**",
-        "spec/**",
-        "**/__tests__/**",
-        "test.{js,jsx}",
-        "test-*.{js,jsx}",
-        "**/*.{test,spec}.{js,jsx}",
-        "**/jest.config.js",
-        "**/webpack.config.js",
-        "**/webpack.config.*.js",
-        "**/rollup.config.js",
-        "**/rollup.config.*.js",
-        "**/gulpfile.js",
-        "**/gulpfile.*.js",
-        "**/Gruntfile{,.js}",
-        "**/protractor.conf.js",
-        "**/protractor.conf.*.js",
-      ],
-      "optionalDependencies": false,
-    }],
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": [
+          "test/**",
+          "tests/**",
+          "spec/**",
+          "**/__tests__/**",
+          "test.{js,jsx}",
+          "test-*.{js,jsx}",
+          "**/*.{test,spec}.{js,jsx}",
+          "**/jest.config.js",
+          "**/webpack.config.js",
+          "**/webpack.config.*.js",
+          "**/rollup.config.js",
+          "**/rollup.config.*.js",
+          "**/gulpfile.js",
+          "**/gulpfile.*.js",
+          "**/Gruntfile{,.js}",
+          "**/protractor.conf.js",
+          "**/protractor.conf.*.js"
+        ],
+        "optionalDependencies": false
+      }
+    ],
     "import/no-mutable-exports": "error",
 
     "import/no-commonjs": "off",
@@ -70,35 +65,55 @@
     "import/imports-first": "off",
     "import/no-duplicates": "error",
     "import/no-namespace": "off",
-    "import/extensions": ["error", "always", {
-          "js": "never",
-          "mjs": "never",
-          "jsx": "never",
-        }],
-    "import/order": ["off", {
-      "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
-      "newlines-between": "never",
-    }],
+    "import/extensions": [
+      "error",
+      "always",
+      {
+        "js": "never",
+        "mjs": "never",
+        "jsx": "never"
+      }
+    ],
+    "import/order": [
+      "off",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
+        "newlines-between": "never"
+      }
+    ],
     "import/prefer-default-export": "error",
     "import/no-restricted-paths": "off",
     "import/max-dependencies": ["off", { "max": 10 }],
     "import/no-absolute-path": "error",
     "import/no-dynamic-require": "off",
-    "import/no-internal-modules": ["off", {
-      "allow": [],
-    }],
+    "import/no-internal-modules": [
+      "off",
+      {
+        "allow": []
+      }
+    ],
     "import/unambiguous": "off",
     "import/no-webpack-loader-syntax": "error",
     "import/no-unassigned-import": "off",
     "import/no-named-default": "error",
-    "import/no-anonymous-default-export": ["off", {
-      "allowArray": false,
-      "allowArrowFunction": false,
-      "allowAnonymousClass": false,
-      "allowAnonymousFunction": false,
-      "allowLiteral": false,
-      "allowObject": false,
-    }],
+    "import/no-anonymous-default-export": [
+      "off",
+      {
+        "allowArray": false,
+        "allowArrowFunction": false,
+        "allowAnonymousClass": false,
+        "allowAnonymousFunction": false,
+        "allowLiteral": false,
+        "allowObject": false
+      }
+    ],
     "import/exports-last": "off",
     "import/group-exports": "off",
     "import/no-default-export": "off",
@@ -106,10 +121,7 @@
     "accessor-pairs": 2,
     "arrow-spacing": 2,
     "block-scoped-var": 2,
-    "block-spacing": [
-      2,
-      "always"
-    ],
+    "block-spacing": [2, "always"],
     "brace-style": [
       2,
       "1tbs",
@@ -118,13 +130,16 @@
       }
     ],
     "camelcase": 0,
-    "comma-dangle": ["error", {
-      "arrays": "always-multiline",
-      "objects": "always-multiline",
-      "imports": "never",
-      "exports": "never",
-      "functions": "ignore"
-    }],
+    "comma-dangle": [
+      "error",
+      {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "never",
+        "exports": "never",
+        "functions": "ignore"
+      }
+    ],
     "comma-spacing": [
       2,
       {
@@ -132,33 +147,24 @@
         "before": false
       }
     ],
-    "comma-style": [
-      2,
-      "last"
-    ],
-    "consistent-this": [
-      2,
-      "self"
-    ],
+    "comma-style": [2, "last"],
+    "consistent-this": [2, "self"],
     "constructor-super": 2,
     "curly": 2,
     "default-case": 2,
-    "dot-location": [
-      2,
-      "property"
-    ],
+    "dot-location": [2, "property"],
     "dot-notation": 2,
     "eol-last": 2,
-    "eqeqeq": [
-      2,
-      "smart"
-    ],
-    "generator-star-spacing": ["error", {
+    "eqeqeq": [2, "smart"],
+    "generator-star-spacing": [
+      "error",
+      {
         "before": false,
         "after": true,
-        "anonymous": {"before": false, "after": true},
-        "method": {"before": true, "after": true}
-    }],
+        "anonymous": { "before": false, "after": true },
+        "method": { "before": true, "after": true }
+      }
+    ],
     "global-require": 0,
     "handle-callback-err": 1,
     "indent": [
@@ -179,14 +185,13 @@
       "error",
       {
         "after": true,
-        "before": false,
+        "before": true,
         "overrides": {
           "else": { "before": true },
           "catch": { "before": true }
         }
       }
     ],
-    "new-cap": 2,
     "new-parens": 2,
     "no-alert": 1,
     "no-array-constructor": 2,
@@ -225,7 +230,7 @@
     "no-labels": 2,
     "no-lone-blocks": 2,
     "no-lonely-if": 2,
-    "no-loop-func": 2,
+    "no-loop-func": 0,
     "no-mixed-spaces-and-tabs": 2,
     "no-multi-spaces": 2,
     "no-multi-str": 2,
@@ -280,31 +285,15 @@
     "no-void": 2,
     "no-warning-comments": 1,
     "no-with": 2,
-    "object-curly-spacing": [
-      2,
-      "always"
-    ],
+    "object-curly-spacing": [2, "always"],
     "prefer-arrow-callback": 0,
     "prefer-spread": 1,
     "prefer-template": 1,
-    "quotes": [
-      2,
-      "single",
-      "avoid-escape"
-    ],
-    "radix": [
-      2,
-      "as-needed"
-    ],
+    "quotes": [2, "single", "avoid-escape"],
+    "radix": [2, "as-needed"],
     "require-yield": 2,
-    "semi": [
-      2,
-      "always"
-    ],
-    "space-before-blocks": [
-      2,
-      "always"
-    ],
+    "semi": [2, "always"],
+    "space-before-blocks": [2, "always"],
     "space-before-function-paren": [
       2,
       {
@@ -312,10 +301,7 @@
         "named": "never"
       }
     ],
-    "space-in-parens": [
-      "error",
-      "never"
-    ],
+    "space-in-parens": ["error", "never"],
     "space-infix-ops": 2,
     "space-unary-ops": [
       2,
@@ -324,17 +310,11 @@
         "words": true
       }
     ],
-    "spaced-comment": [
-      2,
-      "always"
-    ],
+    "spaced-comment": [2, "always"],
     "use-isnan": 2,
     "valid-typeof": 2,
     "vars-on-top": 2,
-    "wrap-iife": [
-      2,
-      "inside"
-    ],
+    "wrap-iife": [2, "inside"],
     "yoda": 2
   }
 }
