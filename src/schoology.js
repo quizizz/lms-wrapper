@@ -197,6 +197,7 @@ class Schoology {
       description: assignmentDescription,
       published: 1,
       show_comments: 1,
+      grading_period: '0',
     };
 
     if (dueAt) {
@@ -209,7 +210,7 @@ class Schoology {
 
     const { grading = {} } = options;
     if (grading.isGraded && gradeCategoryId) {
-      payload.grading_category = gradeCategoryId;
+      payload.grading_category = '0';
     }
     payload.max_points = grading.maxPoints || 100;
 
@@ -406,7 +407,6 @@ class Schoology {
           if (retries >= 2) {
             throw new LMSError('Tried to refresh token 2 times and failed', 'canvas.TOO_MANY_RETRIES', {
               userId: this.userId,
-              
             });
           }
           const resp = await this.makeRequest(request, { retries: retries + 1 });
@@ -428,7 +428,7 @@ class Schoology {
         request,
       });
     } else {
-      throw error;
+      throw new LMSError('Unknown Schoology error', 'schoology.UKW', { error, request });
     }
   }
 
@@ -448,7 +448,7 @@ class Schoology {
       const result = await this.oAuth.makeRequest(request);
       return result;
     } catch (ex) {
-      this.handleError(ex, request, meta);
+      await this.handleError(ex, request, meta);
     }
   }
 
