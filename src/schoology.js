@@ -210,7 +210,7 @@ class Schoology {
 
     const { grading = {} } = options;
     if (grading.isGraded && gradeCategoryId) {
-      payload.grading_category = '0';
+      payload.grading_category = gradeCategoryId;
     }
     payload.max_points = grading.maxPoints || 100;
 
