@@ -190,6 +190,41 @@ class Schoology {
     return response.data;
   }
 
+  async getSection({ sectionId }) {
+    const response = await this.makeRequest({
+      url: `v1/sections/${sectionId}`,
+      method: 'GET',
+    });
+    return response.data;
+  }
+
+  async getGradingPeriod({ gradingPeriodId }) {
+    const response = await this.makeRequest({
+      url: `/v1/gradingPeriods/${gradingPeriodId}`,
+      method: 'GET',
+    });
+    return response.data;
+  }
+
+  async selectGradingPeriod({ sectionId }) {
+    const section = await this.getSection({ sectionId });
+    const { grading_periods = [] } = section;
+
+    // one grading period means we don't have any option
+    if (grading_periods.length <= 1) {
+      return null;
+    }
+
+    for (let i = 0; i <= grading_periods.length; i += 1) {
+      const gradingPeriodId = grading_periods[i];
+      const gradingPeriod = await this.getGradingPeriod({ gradingPeriodId });
+      const { active = 0, has_children = false } = gradingPeriod;
+      if (Number(active) && !has_children) {
+        return gradingPeriodId;
+      }
+    }
+  }
+
   async createAssignment({ sectionId, assignmentName, assignmentDescription, dueAt, studentIds = [], gradeCategoryId, options }) {
     const payload = {
       title: assignmentName,
@@ -197,8 +232,14 @@ class Schoology {
       description: assignmentDescription,
       published: 1,
       show_comments: 1,
-      grading_period: '0',
     };
+
+    // select approp grading period using sectionId
+    const grading_period = await this.selectGradingPeriod({ sectionId });
+    debug('Selected grading period %s for sectionId %s', grading_period, sectionId);
+    if (grading_period) {
+      payload.grading_period = grading_period;
+    }
 
     if (dueAt) {
       payload.due = dueAt;
