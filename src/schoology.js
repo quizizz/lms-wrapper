@@ -66,7 +66,7 @@ class Schoology {
         'oauth_callback': this.redirectUri,
       });
     } catch (error) {
-      this.handleError(error, {
+      await this.handleError(error, {
         url: '/v1/oauth/request_token',
         action: 'getAuthorizationURL',
       });
@@ -88,7 +88,7 @@ class Schoology {
 
       return tokenData;
     } catch (error) {
-      this.handleError(error, {
+      await this.handleError(error, {
         url: apiPath,
         method: 'GET',
       });
@@ -446,7 +446,7 @@ class Schoology {
         }
         case 500:
           if (retries >= 2) {
-            throw new LMSError('Tried to refresh token 2 times and failed', 'canvas.TOO_MANY_RETRIES', {
+            throw new LMSError('Tried to refresh token 2 times and failed', 'schoology.TOO_MANY_RETRIES', {
               userId: this.userId,
             });
           }
