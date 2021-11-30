@@ -56,6 +56,14 @@ class OAuth {
     return url.toString();
   }
 
+  static appendQuery(currentUrl, query = {}) {
+    const url = new URL(currentUrl);
+    for (const [key, value] of Object.entries(query)) {
+      url.searchParams.append(key, value);
+    }
+    return url.toString();
+  }
+
   static post(host, path, query, data, headers = {}) {
     const url = OAuth.makeURL(host, path, query);
 
@@ -130,7 +138,9 @@ class OAuth {
       throw new Error('Access token not found wile making request');
     }
   
-    const url = is.url(requestConfig.url) ? requestConfig.url : OAuth.makeURL(this.apiBase, requestConfig.url, requestConfig.query || {});
+    const url = is.url(requestConfig.url)
+      ? OAuth.appendQuery(requestConfig.url, requestConfig.query || {})
+      : OAuth.makeURL(this.apiBase, requestConfig.url, requestConfig.query || {});
     const oAuthHeader = this.getOAuthHeader();
 
     const finalRequest = {
