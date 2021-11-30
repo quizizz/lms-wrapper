@@ -1,6 +1,6 @@
 {
   "name": "@quizizz/lms",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Some LMS apis",
   "main": "src/index.js",
   "scripts": {
