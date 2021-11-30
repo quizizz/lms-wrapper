@@ -38,7 +38,7 @@ describe('GCL', () => {
       client_id,
       client_secret,
       redirect_uri: 'https://google.com/lms/gcl/callback',
-      scope: ['all']
+      scope: ['all'],
     };
 
     const teacher = new GCL('teacher', emitter, opts, {}, {
