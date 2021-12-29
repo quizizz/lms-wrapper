@@ -2,8 +2,6 @@ import { AxiosResponse } from 'axios';
 import {RequestConfig} from './types';
 import OAuth from './oauth2';
 
-export = Canvas;
-
 interface Tokens {
   accessToken: string;
   refreshToken: string;
@@ -19,7 +17,7 @@ interface AuthURLOptions {
   scopes: string[];
 }
 
-interface CanvasProfile {
+export interface CanvasProfile {
   id: string;
   name: string;
   primary_email: string;
@@ -31,21 +29,20 @@ declare enum SubmissionStates {
   GRADED = 'graded',
   UNSUBMITTED = 'unsubmitted',
 }
+
+export = Canvas;
 declare class Canvas {
   constructor(options: {
-    orgName: string;
     hostedUrl: string;
     redirectUri: string;
     accessToken: string;
     refreshToken: string;
     clientId: string;
     clientSecret: string;
-    fxs: { getUserToken: GetUserToken, setUserToken: SetUserToken };
+    fxs: { getToken: GetUserToken, setToken: SetUserToken };
     userId: string;
     canvasUserId?: string;
   });
-
-  orgName: string;
   hostedUrl: string;
   redirectUri: string;
   accessToken: string;
@@ -66,7 +63,11 @@ declare class Canvas {
   isTokenExpired(err: Error): boolean;
   makeRequest(requestConfig: RequestConfig, retries: number): Promise<AxiosResponse>;
   getProfile(): Promise<CanvasProfile>;
+  getUserProfile(id: number): Promise<CanvasProfile>;
   getTokensFromUser(): Promise<void>;
+
+  getAccounts(): Promise<Account[]>;
+  getAccountUsers(id: number, data?: { enrollment_type: string[] }): Promise<User[]>;
 
   getCourses(): Promise<Course[]>;
   announce(args: { courseId: string; pinned?: boolean; title: string; message: string }): Promise<void>;
@@ -85,6 +86,21 @@ interface GradeSubmissionResponse extends Submission {
 interface Course {
   id: number;
   name: string;
+}
+
+export interface Account {
+  id: number,
+  name: string,
+  uuid: string,
+};
+
+export interface User {
+  id: number,
+  name: string,
+  first_name: string,
+  last_name: string,
+  login_id: string,
+  email?: string,
 }
 
 interface Student {

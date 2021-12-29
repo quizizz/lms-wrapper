@@ -264,6 +264,15 @@ class Schoology {
     return assignment.data;
   }
 
+  async getAssignment({ sectionId, assignmentId }) {
+    const response = await this.makeRequest({
+      url: `/v1/sections/${sectionId}/assignments/${assignmentId}`,
+      method: 'GET',
+    });
+
+    return response.data;
+  }
+
   async submitAssignment({ sectionId, assignmentId, submissionUrl }) {
     const submission = await this.makeRequest({
       url: `/v1/sections/${sectionId}/submissions/${assignmentId}/create`,
@@ -579,9 +588,9 @@ class Schoology {
     return user;
   }
 
-  async getBuilding(id) {
+  async getSchoolBuildings(schoolId) {
     const { data: { building } } = await this.makeRequest({
-      url: `v1/schools/${id}/buildings`,
+      url: `v1/schools/${schoolId}/buildings`,
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

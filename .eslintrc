@@ -310,7 +310,7 @@
         "words": true
       }
     ],
-    "spaced-comment": [2, "always"],
+    "spaced-comment": [0, "always"],
     "use-isnan": 2,
     "valid-typeof": 2,
     "vars-on-top": 2,

@@ -322,7 +322,7 @@ class GCL {
     const api = classroom.courses.students.list;
     const request = { courseId, pageToken, pageSize: 20 };
     return this.makeRequest(userId, api, request);
-  };
+  }
 
   async getCourseStudents(userId, { courseId }) {
     const students = [];
@@ -341,7 +341,7 @@ class GCL {
   async getSingleCourseStudent(teacherId, courseId, userId) {
     const api = classroom.courses.students.get;
     const request = { courseId, userId };
-    return this.makeRequest(teacherId,api,request);
+    return this.makeRequest(teacherId, api, request);
   }
 
   getStudentSubmission(userId, { courseId, courseWorkId }) {
@@ -437,20 +437,25 @@ class GCL {
     });
   }
 
-  async _getCourses(userId, { pageToken }) {
+  async _getCourses(userId, { pageToken, as }) {
     const api = classroom.courses.list;
-    const request = { courseStates: 'ACTIVE', teacherId: 'me', pageToken, pageSize: 20 };
+    let request = { courseStates: 'ACTIVE', teacherId: 'me', pageToken, pageSize: 20 };
+    if (as === 'admin') {
+      request = { courseStates: 'ACTIVE', pageToken, pageSize: 20 };
+    }
     return this.makeRequest(userId, api, request);
-  };
+  }
 
-  async getPaginatedCourses(userId) {
+  async getPaginatedCourses(userId, options = {}) {
+    const { as } = options;
     const courses = [];
     let nextPageToken;
-    let count = 0;
     do {
-      count += 1;
-      const response = await this._getCourses(userId, { pageToken: nextPageToken });
-      nextPageToken = response.nextPageToken,
+      const response = await this._getCourses(userId, {
+        pageToken: nextPageToken,
+        as: as || 'teacher',
+      });
+      nextPageToken = response.nextPageToken;
       courses.push(...(response.courses || []));
     } while (nextPageToken);
 
@@ -461,16 +466,17 @@ class GCL {
     const api = classroom.courses.teachers.list;
     const request = { courseId, pageToken, pageSize: 20 };
     return this.makeRequest(userId, api, request);
-  };
+  }
 
   async getPaginatedCourseTeachers(userId, { courseId }) {
     const teachers = [];
     let nextPageToken;
-    let count = 0;
     do {
-      count += 1;
-      const response = await this._getCourseTeachers(userId, { courseId, pageToken: nextPageToken });
-      nextPageToken = response.nextPageToken,
+      const response = await this._getCourseTeachers(userId, {
+        courseId,
+        pageToken: nextPageToken,
+      });
+      nextPageToken = response.nextPageToken;
       teachers.push(...(response.teachers || []));
     } while (nextPageToken);
 
@@ -487,25 +493,23 @@ class GCL {
     const api = admin.users.list;
     const request = { ...query, pageSize: 20 };
     return this.makeRequest(userId, api, request);
-  };
+  }
 
   async getPaginatedDomainUsers(userId, query) {
     const users = [];
     let nextPageToken;
-    let count = 0;
     do {
-      count += 1;
       const response = await this._getDomainUsers(userId, { ...query, pageToken: nextPageToken });
-      nextPageToken = response.nextPageToken,
+      nextPageToken = response.nextPageToken;
       users.push(...(response.users || []));
     } while (nextPageToken);
 
     return users;
-  };
+  }
 
-  async createRegistration({ userId, courseId, topicName}) {
+  async createRegistration({ userId, courseId, topicName }) {
     const response = { status: false };
-    if(is.string(userId) && is.string(courseId)) {
+    if (is.string(userId) && is.string(courseId)) {
       const api = classroom.registrations.create;
       const registration = {
         feed: {
@@ -516,27 +520,27 @@ class GCL {
         },
         cloudPubsubTopic: {
           topicName,
-        }
-      }
+        },
+      };
       const registeredObject = await this.makeRequest(userId, api, { resource: registration });
       return Object.assign({ status: true }, registeredObject);
-    } else {
-      throw new LMSError('Not Valid userId or courseId', 'gcl.INVALID_PARAMS', {userId, courseId});
-      return response;
     }
+    throw new LMSError('Not Valid userId or courseId', 'gcl.INVALID_PARAMS', { userId, courseId });
+    return response;
+    
   }
 
-  async deleteRegistration({userId, registrationId}) {
-    if(is.string(registrationId) && is.string(userId)) {
-        const api = classroom.registrations.delete;
-        const query = {
-          registrationId
-        }
-        const response = await this.makeRequest(userId, api, query);
-        return response;
-    } else {
-      throw new LMSError('Not Valid userId or registrationId', 'gcl.INVALID_PARAMS', {userId, registrationId});
+  async deleteRegistration({ userId, registrationId }) {
+    if (is.string(registrationId) && is.string(userId)) {
+      const api = classroom.registrations.delete;
+      const query = {
+        registrationId,
+      };
+      const response = await this.makeRequest(userId, api, query);
+      return response;
     }
+    throw new LMSError('Not Valid userId or registrationId', 'gcl.INVALID_PARAMS', { userId, registrationId });
+    
   }
 }
 
