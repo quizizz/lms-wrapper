@@ -1,7 +1,9 @@
-export = GCL;
+
 /**
 * @class GCL
 */
+
+export = GCL;
 declare class GCL {
   constructor(name: any, emitter: any, opts: any, urls?: {}, fxs?: {});
   name: any;
@@ -89,36 +91,37 @@ declare class GCL {
     courseWorkId: any;
     subId: any;
   }): any;
-  getPaginatedCourses(userId: string, options: { as: 'admin' | 'teacher' }): Promise<Course[]>;
-  getPaginatedCourseTeachers(userId: string, params: { courseId: string }): Promise<Teacher[]>;
-  getPaginatedDomainUsers(userId: string, query: { domain: string  }): Promise<DomainUser[]>;
+  getPaginatedCourses(userId: string, options: { as: 'admin' | 'teacher' }): Promise<GCL.Course[]>;
+  getPaginatedCourseTeachers(userId: string, params: { courseId: string }): Promise<GCL.Teacher[]>;
+  getPaginatedDomainUsers(userId: string, query: { domain: string  }): Promise<GCL.DomainUser[]>;
 }
-
-export type Course = {
-  id: string,
-  name: string,
-  section: string,
-}
-
-export type Teacher = {
-  courseId: string,
-  userId: string,
-  profile: Profile,
-}
-
-export type Profile = {
-  id: string,
-  name: string,
-  emailAddress: string,
-  photoUrl: string,
-};
-
-export type DomainUser = {
-  id: string,
-  primaryEmail: string,
-  name: {
-    fullName: string,
-    familyName: string,
-    givenName: string,
+declare namespace GCL {
+  export type Course = {
+    id: string,
+    name: string,
+    section: string,
   }
-};
+  
+  export type Teacher = {
+    courseId: string,
+    userId: string,
+    profile: Profile,
+  }
+  
+  export type Profile = {
+    id: string,
+    name: string,
+    emailAddress: string,
+    photoUrl: string,
+  };
+  
+  export type DomainUser = {
+    id: string,
+    primaryEmail: string,
+    name: {
+      fullName: string,
+      familyName: string,
+      givenName: string,
+    }
+  };  
+}

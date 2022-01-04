@@ -1,3 +1,5 @@
+/// <reference path='./schoology.d.ts' />
+
 const _ = require('lodash');
 const is = require('is_js');
 

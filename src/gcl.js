@@ -1,3 +1,5 @@
+/// <reference path='./gcl.d.ts' />
+
 /* eslint camelcase: 0 */
 
 const moment = require('moment');
