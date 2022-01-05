@@ -13,6 +13,10 @@ type EnrollmentFilterOptions = {
   type: string[]
 }
 
+type RequestOptions = {
+  throttle?: { delay?: number },
+}
+
 export = Schoology;
 declare class Schoology {
   hostedUrl: string;
@@ -46,9 +50,9 @@ declare class Schoology {
   getUserProfile(): Promise<Schoology.Profile>;
   getSchool(id: string): Promise<Schoology.School>;
   getSchoolBuildings(id: string): Promise<Schoology.Building[]>;
-  getBuildingCourses(params: { buildingId: string }): Promise<Schoology.Course[]>;
-  getAllSectionsForCourse(courseId: string, params?: { includePast?: 0 | 1 }): Promise<Schoology.Section[]>;
-  listUsers(params: { sectionId: string, query: EnrollmentFilterOptions }): Promise<Schoology.Enrollment[]>;
+  getBuildingCourses(params: { buildingId: string }, options?: RequestOptions): Promise<Schoology.Course[]>;
+  getAllSectionsForCourse(courseId: string, params?: { includePast?: 0 | 1 }, options?: RequestOptions): Promise<Schoology.Section[]>;
+  listUsers(params: { sectionId: string, query: EnrollmentFilterOptions }, options?: RequestOptions): Promise<Schoology.Enrollment[]>;
   getUser(uid: string): Promise<Schoology.Profile>;
 }
 
