@@ -47,7 +47,7 @@ declare class Schoology {
   getSchool(id: string): Promise<Schoology.School>;
   getSchoolBuildings(id: string): Promise<Schoology.Building[]>;
   getBuildingCourses(params: { buildingId: string }): Promise<Schoology.Course[]>;
-  getAllSectionsForCourse(courseId: string): Promise<Schoology.Section[]>;
+  getAllSectionsForCourse(courseId: string, params?: { includePast?: 0 | 1 }): Promise<Schoology.Section[]>;
   listUsers(params: { sectionId: string, query: EnrollmentFilterOptions }): Promise<Schoology.Enrollment[]>;
   getUser(uid: string): Promise<Schoology.Profile>;
 }

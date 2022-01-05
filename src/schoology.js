@@ -134,10 +134,11 @@ class Schoology {
     }));
   }
 
-  async getAllSectionsForCourse(courseId) {
+  async getAllSectionsForCourse(courseId, params = {}) {
     const sections = await this.paginatedCollect({
       url: `/v1/courses/${courseId}/sections`,
       method: 'GET',
+      query: { include_past: params.includePast },
     }, 'section');
 
     return sections;
