@@ -7,11 +7,10 @@ interface Tokens {
     refresh_token: string;
 }
 
-export = Edmodo;
 /**
  * @class  Edmodo
  */
-declare class Edmodo {
+export default class Edmodo {
   constructor(
     name: string,
     emitter: events.EventEmitter,

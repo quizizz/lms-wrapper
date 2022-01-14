@@ -1,5 +1,4 @@
-export = LMSError;
-declare class LMSError extends Error {
+export default class LMSError extends Error {
     /**
      * @param {string} message
      * @param {string} [type=error]

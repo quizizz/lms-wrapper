@@ -1,3 +1,5 @@
+/// <reference path='./schoology.d.ts' />
+
 const _ = require('lodash');
 const is = require('is_js');
 
@@ -5,6 +7,11 @@ const OAuth = require('./oauth');
 const LMSError = require('./error');
 const debug = require('debug')('q:lms:schoology');
 
+function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 /**
  * @class Schoology
@@ -132,11 +139,12 @@ class Schoology {
     }));
   }
 
-  async getAllSectionsForCourse(courseId) {
+  async getAllSectionsForCourse(courseId, params = {}, options = {}) {
     const sections = await this.paginatedCollect({
       url: `/v1/courses/${courseId}/sections`,
       method: 'GET',
-    }, 'section');
+      query: { include_past: params.includePast },
+    }, 'section', options.throttle);
 
     return sections;
   }
@@ -262,6 +270,15 @@ class Schoology {
     });
 
     return assignment.data;
+  }
+
+  async getAssignment({ sectionId, assignmentId }) {
+    const response = await this.makeRequest({
+      url: `/v1/sections/${sectionId}/assignments/${assignmentId}`,
+      method: 'GET',
+    });
+
+    return response.data;
   }
 
   async submitAssignment({ sectionId, assignmentId, submissionUrl }) {
@@ -493,7 +510,7 @@ class Schoology {
     }
   }
 
-  async paginatedCollect(requestConfig, keyWithPaginatedResults) {
+  async paginatedCollect(requestConfig, keyWithPaginatedResults, throttle = {}) {
     const results = [];
     let pageUrl = requestConfig.url;
     let pages = 0;
@@ -504,6 +521,11 @@ class Schoology {
         url: pageUrl,
       });
       pages += 1;
+
+      if (throttle && throttle.delay) {
+        debug('Waiting for %d', throttle.delay);
+        await wait(throttle.delay);
+      }
 
       const listData = _.get(result, `data.${keyWithPaginatedResults}`, []);
       const nextPageUrl = _.get(result, 'data.links.next', '');
@@ -545,11 +567,11 @@ class Schoology {
   /**
    * Mainly added to fetch all courses for a school, also we can fetch course for a building by passing building_id
    */
-  async getBuildingCourses({ buildingId }) {
+  async getBuildingCourses({ buildingId }, options = { }) {
     const courses = await this.paginatedCollect({
       url: '/v1/courses',
       query: { building_id: buildingId },
-    }, 'course');
+    }, 'course', options.throttle);
 
     return courses;
   }
@@ -557,12 +579,12 @@ class Schoology {
   /**
    * Mainly added to fetch all teacher for each sections
    */
-  async listUsers({ sectionId, query = { 'type': ['admin'] } }) {
+  async listUsers({ sectionId, query = { 'type': ['admin'] } }, options = {}) {
     const users = await this.paginatedCollect({
       url: `/v1/sections/${sectionId}/enrollments`,
       method: 'GET',
       query,
-    }, 'enrollment');
+    }, 'enrollment', options.throttle);
 
     return users;
   }
@@ -579,9 +601,9 @@ class Schoology {
     return user;
   }
 
-  async getBuilding(id) {
+  async getSchoolBuildings(schoolId) {
     const { data: { building } } = await this.makeRequest({
-      url: `v1/schools/${id}/buildings`,
+      url: `v1/schools/${schoolId}/buildings`,
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

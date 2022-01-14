@@ -1,5 +1,6 @@
 /// <reference path='./canvas.d.ts' />
 
+
 const axios = require('axios');
 const _ = require('lodash');
 const OAuth = require('./oauth2');
@@ -11,7 +12,6 @@ const { paginatedCollect } = require('./helpers/utils');
  */
 class Canvas {
   constructor({
-    orgName,
     hostedUrl,
     redirectUri,
     accessToken,
@@ -22,7 +22,6 @@ class Canvas {
     userId, // mongoId
     canvasUserId,
   }) {
-    this.orgName = orgName;
     this.hostedUrl = hostedUrl;
     this.redirectUri = redirectUri;
     this.accessToken = accessToken;
@@ -75,7 +74,7 @@ class Canvas {
         }),
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
       });
 
       this.accessToken = resp.data.access_token;
@@ -97,9 +96,9 @@ class Canvas {
       });
       this.canvasUserId = resp.data.id;
       return resp.data;
-    } catch(err) {
+    } catch (err) {
       throw new LMSError('Unable to fetch user profile', 'canvas.USER_PROFILE_ERROR', {
-        userId: this.userId
+        userId: this.userId,
       });
     }
   }
@@ -147,8 +146,8 @@ class Canvas {
 
   isTokenExpired(err) {
     // check condition for token expiration, canvas sends a `WWW-Authenticate` header if 401 is for token expiry
-    const headers = _.get( err, 'response.headers', {} );
-    if ( headers['www-authenticate'] ) {
+    const headers = _.get(err, 'response.headers', {});
+    if (headers['www-authenticate']) {
       return true;
     }
     return false;
@@ -171,7 +170,7 @@ class Canvas {
         }),
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
       });
       this.accessToken = resp.data.access_token;
       this.canvasUserId = resp.data.user.id;
@@ -204,9 +203,9 @@ class Canvas {
       }
       const url = OAuth.makeURL(this.hostedUrl, requestConfig.url, requestConfig.query || {});
       const response = await axios({
-          ...requestConfig,
-          url,
-          headers: { Authorization: `Bearer ${this.accessToken}` },
+        ...requestConfig,
+        url,
+        headers: { Authorization: `Bearer ${this.accessToken}` },
       });
       const { data, status } = response;
       return { data, status };
@@ -222,7 +221,7 @@ class Canvas {
             }
             try {
               await this.refreshUserToken(this.refreshToken);
-            } catch(err) {
+            } catch (err) {
               console.error(err);
             }
 
@@ -295,8 +294,8 @@ class Canvas {
       payload.only_visible_to_overrides = true;
       payload.assignment_overrides = [
         {
-          "student_ids": studentIds
-        }
+          'student_ids': studentIds,
+        },
       ];
     }
 
@@ -325,8 +324,8 @@ class Canvas {
         submission: {
           submission_type: 'online_url',
           url: submissionUrl,
-        }
-      }
+        },
+      },
     });
     return submission;
   }
@@ -355,9 +354,9 @@ class Canvas {
     return submission;
   }
 
-  async listSubmissions({ courseId, assignmentId}) {
+  async listSubmissions({ courseId, assignmentId }) {
     const submissions = await paginatedCollect(this, {
-      url: `api/v1/courses/${courseId}/assignments/${assignmentId}/submissions`
+      url: `api/v1/courses/${courseId}/assignments/${assignmentId}/submissions`,
     });
     return submissions;
   }
@@ -371,14 +370,14 @@ class Canvas {
     const { data: grades } = await this.makeRequest({
       url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/update_grades`,
       method: 'POST',
-      data: { grade_data: gradeData }
+      data: { grade_data: gradeData },
     });
     return grades;
   }
 
   async getAccounts() {
     const accounts = await paginatedCollect(this, {
-      url: `/api/v1/manageable_accounts`,
+      url: '/api/v1/manageable_accounts',
       method: 'GET',
     });
     return accounts;
@@ -387,7 +386,7 @@ class Canvas {
   /**
    * Mainly added to fetch Teacher and ta, use enrollment_type in data
    */
-  async getAccountUsers(id, data = {enrollment_type: ['teacher', 'ta']}) {
+  async getAccountUsers(id, data = { enrollment_type: ['teacher', 'ta'] }) {
     const users = await paginatedCollect(this, {
       url: `/api/v1/accounts/${id}/users`,
       method: 'GET',
@@ -397,23 +396,14 @@ class Canvas {
   }
 
   async getUserProfile(id) {
-    try {
-      const resp = await this.makeRequest({
-        url: `/api/v1/users/${id}/profile`,
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      this.canvasUserId = resp.data.id;
-      return resp.data;
-    } catch(err) {
-      throw new LMSError('Unable to fetch user profile', 'canvas.USER_PROFILE_ERROR', {
-        userId: this.userId,
-        id,
-        err,
-      });
-    }
+    const resp = await this.makeRequest({
+      url: `/api/v1/users/${id}/profile`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return resp.data;
   }
 }
 
