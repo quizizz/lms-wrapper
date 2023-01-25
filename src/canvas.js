@@ -97,9 +97,10 @@ class Canvas {
       });
       this.canvasUserId = resp.data.id;
       return resp.data;
-    } catch(err) {
+    } catch (err) {
       throw new LMSError('Unable to fetch user profile', 'canvas.USER_PROFILE_ERROR', {
-        userId: this.userId
+        userId: this.userId,
+        err,
       });
     }
   }
@@ -407,7 +408,7 @@ class Canvas {
       });
       this.canvasUserId = resp.data.id;
       return resp.data;
-    } catch(err) {
+    } catch (err) {
       throw new LMSError('Unable to fetch user profile', 'canvas.USER_PROFILE_ERROR', {
         userId: this.userId,
         id,
