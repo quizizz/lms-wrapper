@@ -1,18 +1,6 @@
-import OAuth from './oauth';
+import OAuth, { RequestToken, AccessToken } from './oauth';
 
 export = Schoology;
-
-interface RequestToken {
-  token: string;
-  secret: string;
-  expiresAt: Date;
-}
-
-interface AccessToken {
-  token: string;
-  secret: string;
-  expiresAt: Date;
-}
 
 interface Tokens {
   accessToken: string;
@@ -95,5 +83,4 @@ declare class Schoology {
   getBuilding(id: string): Promise<any>
   getSchool(id: string): Promise<any>
   getInfo(data: any): Promise<any>
-
 }

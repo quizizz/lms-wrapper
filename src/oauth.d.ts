@@ -1,10 +1,10 @@
-interface RequestToken {
+export interface RequestToken {
   token: string;
   secret: string;
   expiresAt: Date;
 }
 
-interface AccessToken {
+export interface AccessToken {
   token: string;
   secret: string;
   expiresAt: Date;
