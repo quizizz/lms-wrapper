@@ -28,8 +28,8 @@ class Schoology {
     this.userId = userId;
     this.schoologyProfileId = schoologyProfileId;
     this.cacheRequestToken = fxs.cacheRequestToken || (() => {});
-    this.getUserAccessToken = fxs.getAccessToken || (() => {});
-    this.setUserAccessToken = fxs.setAccessToken || (() => {});
+    this.getUserToken = fxs.getAccessToken || (() => {});
+    this.setUserToken = fxs.setAccessToken || (() => {});
 
     this.oAuth = new OAuth({
       consumerKey: this.clientId,
@@ -83,7 +83,7 @@ class Schoology {
       const tokenData = result.response;
 
       if (storeUserAccessTokens) {
-        await this.setUserAccessToken(tokenData);
+        await this.setUserToken(tokenData);
       }
 
       return tokenData;
@@ -165,8 +165,8 @@ class Schoology {
   }
 
   // TODO: Rename listStudents instead of using this
-  getCourseStudents({ courseId }) {
-    return this.listStudents({ sectionId: courseId });
+  async getCourseStudents({ courseId }) {
+    return await this.listStudents({ sectionId: courseId });
   }
 
   async getUserIdFromTokens() {
