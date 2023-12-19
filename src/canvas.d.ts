@@ -1,55 +1,41 @@
 import { AxiosResponse } from 'axios';
-import {RequestConfig} from './types';
-import OAuth from './oauth2';
+import { RequestConfig } from './types';
+import { Tokens, GetUserToken, SetUserToken, SubmissionStates } from './common';
 
-export = Canvas;
-
-interface Tokens {
-  accessToken: string;
-  refreshToken: string;
-  canvasUserId: string;
-}
-
-type GetUserToken = (userId: string) => Promise<Tokens>;
-type SetUserToken = (userId: string, tokens: Tokens) => Promise<void>;
-
-interface AuthURLOptions {
+export interface AuthURLOptions {
   redirect_uri: string;
   state: string;
   scopes: string[];
 }
 
-interface CanvasProfile {
+export interface CanvasProfile {
   id: string;
   name: string;
   primary_email: string;
   locale: string;
 }
 
-declare enum SubmissionStates {
-  SUBMITTED = 'submitted',
-  GRADED = 'graded',
-  UNSUBMITTED = 'unsubmitted',
+export interface CanvasOptions {
+  orgName: string;
+  hostedUrl: string;
+  redirectUri: string;
+  accessToken?: string;
+  refreshToken?: string;
+  clientId: string;
+  clientSecret: string;
+  fxs: { getUserToken: GetUserToken, setUserToken: SetUserToken };
+  userId: string;
+  canvasUserId?: string;
 }
+
 declare class Canvas {
-  constructor(options: {
-    orgName: string;
-    hostedUrl: string;
-    redirectUri: string;
-    accessToken: string;
-    refreshToken: string;
-    clientId: string;
-    clientSecret: string;
-    fxs: { getUserToken: GetUserToken, setUserToken: SetUserToken };
-    userId: string;
-    canvasUserId?: string;
-  });
+  constructor(options: CanvasOptions);
 
   orgName: string;
   hostedUrl: string;
   redirectUri: string;
-  accessToken: string;
-  refreshToken: string;
+  accessToken?: string;
+  refreshToken?: string;
   clientId: string;
   clientSecret: string;
   getUserToken: GetUserToken;
@@ -61,7 +47,7 @@ declare class Canvas {
 
   build(): Promise<Canvas>;
   getAuthorizationURL(options: AuthURLOptions): string;
-  getTokensFromCode(code: string): Promise<OAuth.PostResponse>;
+  getTokensFromCode(code: string): Promise<Tokens>;
   handleError(err: Error, code: string, redirectUrl: string): void;
   isTokenExpired(err: Error): boolean;
   makeRequest(requestConfig: RequestConfig, retries: number): Promise<AxiosResponse>;
@@ -79,21 +65,21 @@ declare class Canvas {
   gradeMultipleSubmissions(args: { courseId: string; assignmentId: string; userGradesAndComments: {[studentCanvasId: string]: {grade: number | string, comment?: string } } }): Promise<{id: number; url: string}>;
 }
 
-interface GradeSubmissionResponse extends Submission {
+export interface GradeSubmissionResponse extends Submission {
   all_submissions: Submission[];
 }
-interface Course {
+export interface Course {
   id: number;
   name: string;
 }
 
-interface Student {
+export interface Student {
   id: number;
   name: string;
   email: string;
 }
 
-interface Assignment {
+export interface Assignment {
   id: number;
   description: string;
   due_at?: Date;
@@ -101,7 +87,7 @@ interface Assignment {
   published: boolean;
 }
 
-interface Submission {
+export interface Submission {
   id: number;
   url: string;
   body?: string;
@@ -114,3 +100,5 @@ interface Submission {
   attempt: number;
   workflow_state: 'submitted' | 'graded' | 'unsubmitted';
 }
+
+export default Canvas;

@@ -1,21 +1,5 @@
 import OAuth, { RequestToken, AccessToken } from './oauth';
-
-export = Schoology;
-
-interface Tokens {
-  accessToken: string;
-  refreshToken: string;
-  schoologyUserId: string;
-}
-
-type GetUserToken = (userId: string) => Promise<Tokens>;
-type SetUserToken = (userId: string, tokens: Tokens) => Promise<void>;
-
-declare enum SubmissionStates {
-  SUBMITTED = 'submitted',
-  GRADED = 'graded',
-  UNSUBMITTED = 'unsubmitted',
-}
+import { GetUserToken, SetUserToken, SubmissionStates } from './common';
 
 declare class Schoology {
   constructor(options: {
@@ -84,3 +68,5 @@ declare class Schoology {
   getSchool(id: string): Promise<any>
   getInfo(data: any): Promise<any>
 }
+
+export default Schoology;

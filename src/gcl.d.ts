@@ -1,4 +1,3 @@
-export = GCL;
 /**
  * @class GCL
  */
@@ -90,3 +89,5 @@ declare class GCL {
         subId: any;
     }): any;
 }
+
+export default GCL;
