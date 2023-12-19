@@ -10,7 +10,7 @@ export interface AccessToken {
   expiresAt: Date;
 }
 
-interface OAuthConfig {
+export interface OAuthConfig {
   consumerKey: string;
   consumerSecret: string;
   apiBase: string;
@@ -62,4 +62,4 @@ class OAuth {
   getOAuthHeader(): any;
 }
 
-export = OAuth;
+export default OAuth;
