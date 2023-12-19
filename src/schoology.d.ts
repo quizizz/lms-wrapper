@@ -1,7 +1,8 @@
-import OAuth, { RequestToken, AccessToken } from './oauth';
+import { RequestToken, AccessToken } from './oauth';
 import { GetUserToken, SetUserToken, SubmissionStates } from './common';
 
-declare class Schoology {
+export = Schoology;
+class Schoology {
   constructor(options: {
     schoologyProfileId: string,
     requestToken: RequestToken,
@@ -68,5 +69,3 @@ declare class Schoology {
   getSchool(id: string): Promise<any>
   getInfo(data: any): Promise<any>
 }
-
-export default Schoology;

@@ -28,7 +28,7 @@ export interface CanvasOptions {
   canvasUserId?: string;
 }
 
-declare class Canvas {
+export class Canvas {
   constructor(options: CanvasOptions);
 
   orgName: string;
@@ -100,5 +100,3 @@ export interface Submission {
   attempt: number;
   workflow_state: 'submitted' | 'graded' | 'unsubmitted';
 }
-
-export default Canvas;

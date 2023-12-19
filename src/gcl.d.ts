@@ -1,7 +1,8 @@
 /**
  * @class GCL
  */
-declare class GCL {
+export = GCL
+class GCL {
     constructor(name: any, emitter: any, opts: any, urls?: {}, fxs?: {});
     name: any;
     emitter: any;
@@ -89,5 +90,3 @@ declare class GCL {
         subId: any;
     }): any;
 }
-
-export default GCL;

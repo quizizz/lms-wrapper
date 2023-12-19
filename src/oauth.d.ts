@@ -21,7 +21,7 @@ export interface OAuthConfig {
   accessToken: AccessToken;
 }
 
-class OAuth {
+export class OAuth {
   constructor(config: OAuthConfig);
 
   static getTimeStamp(): number;
@@ -62,4 +62,3 @@ class OAuth {
   getOAuthHeader(): any;
 }
 
-export default OAuth;

@@ -1,4 +1,5 @@
-declare class LMSError extends Error {
+export = LMSError;
+class LMSError extends Error {
     /**
      * @param {string} message
      * @param {string} [type=error]
@@ -9,4 +10,3 @@ declare class LMSError extends Error {
     type: string;
     cause: any;
 }
-export default LMSError;
