@@ -6,7 +6,7 @@ export interface SchoologyOptions {
   requestToken?: RequestToken;
   accessToken?: AccessToken;
   fxs: {
-    cacheRequestToken?: () => void;
+    cacheRequestToken?: (any) => Promise<any>;
     getAccessToken?: GetUserToken;
     setAccessToken?: SetUserToken;
   };
@@ -26,7 +26,7 @@ export class Schoology {
   clientSecret: string;
   userId: string;
   schoologyProfileId: string;
-  cacheRequestToken: () => void;
+  cacheRequestToken: (any) => Promise<any>;
   getUserToken: GetUserToken; 
   setUserToken: SetUserToken;
   oAuth: OAuth;
