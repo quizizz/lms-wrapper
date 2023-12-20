@@ -16,14 +16,14 @@ export interface CanvasProfile {
 }
 
 export interface CanvasOptions {
-  orgName: string;
+  orgName?: string;
   hostedUrl: string;
   redirectUri: string;
   accessToken?: string;
   refreshToken?: string;
   clientId: string;
   clientSecret: string;
-  fxs: { getUserToken: GetUserToken, setUserToken: SetUserToken };
+  fxs: { getToken: GetUserToken, setToken: SetUserToken };
   userId: string;
   canvasUserId?: string;
 }
@@ -31,7 +31,7 @@ export interface CanvasOptions {
 export class Canvas {
   constructor(options: CanvasOptions);
 
-  orgName: string;
+  orgName?: string;
   hostedUrl: string;
   redirectUri: string;
   accessToken?: string;
