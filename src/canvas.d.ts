@@ -63,7 +63,7 @@ export class Canvas {
   getTokensFromCode(code: string): Promise<Tokens>;
   handleError(err: Error, code: string, redirectUrl: string): void;
   isTokenExpired(err: Error): boolean;
-  makeRequest(requestConfig: RequestConfig, retries: number): Promise<AxiosResponse>;
+  makeRequest(requestConfig: RequestConfig, retries?: number): Promise<AxiosResponse>;
   getProfile(): Promise<CanvasProfile>;
   getTokensFromUser(): Promise<void>;
 
