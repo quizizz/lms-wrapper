@@ -11,7 +11,10 @@ import {
   Submission,
   Assignment,
 } from "./canvas";
-import Schoology from "./schoology";
+import {
+  Schoology,
+  SchoologyOptions,
+} from "./schoology";
 import {
   Tokens,
   GetUserToken,
@@ -34,6 +37,7 @@ export {
   GCL,
   LMSError,
   Schoology,
+  SchoologyOptions,
   AuthURLOptions,
   CanvasProfile,
   CanvasOptions,

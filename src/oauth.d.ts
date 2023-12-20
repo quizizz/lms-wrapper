@@ -1,13 +1,15 @@
 export interface RequestToken {
   token: string;
   secret: string;
-  expiresAt: Date;
+  // our own addition not in api
+  expiresAt?: Date;
 }
 
 export interface AccessToken {
   token: string;
   secret: string;
-  expiresAt: Date;
+  // our own addition not in api
+  expiresAt?: Date;
 }
 
 export interface OAuthConfig {

@@ -11,8 +11,22 @@ export interface AuthURLOptions {
 export interface CanvasProfile {
   id: string;
   name: string;
+  short_name: string;
+  sortable_name: string;
+  title?: string;
+  bio?: string;
   primary_email: string;
-  locale: string;
+  login_id: string;
+  sis_user_id: string;
+  lti_user_id?: string;
+  avatar_url: string;
+  calendar?: string;
+  time_zone?: string;
+  locale?: string;
+  k5_user: boolean;
+  use_classic_font_in_k5: boolean;
+  // our own addition not in api
+  email?: string;
 }
 
 export interface CanvasOptions {

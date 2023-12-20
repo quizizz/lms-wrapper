@@ -1,23 +1,24 @@
 import { RequestToken, AccessToken } from './oauth';
 import { GetUserToken, SetUserToken, SubmissionStates } from './common';
 
-export = Schoology;
-class Schoology {
-  constructor(options: {
-    schoologyProfileId: string,
-    requestToken: RequestToken,
-    accessToken: AccessToken,
-    fxs: {
-      cacheRequestToken?: () => void,
-      getAccessToken?: GetUserToken,
-      setAccessToken?: SetUserToken,
-    },
-    hostedUrl: string;
-    redirectUri: string;
-    clientId: string;
-    clientSecret: string;
-    userId: string;
-  });
+export interface SchoologyOptions {
+  schoologyProfileId: string;
+  requestToken: RequestToken;
+  accessToken: AccessToken;
+  fxs: {
+    cacheRequestToken?: () => void;
+    getAccessToken?: GetUserToken;
+    setAccessToken?: SetUserToken;
+  };
+  hostedUrl: string;
+  redirectUri: string;
+  clientId: string;
+  clientSecret: string;
+  userId: string;
+}
+
+export class Schoology {
+  constructor(options: SchoologyOptions);
 
   hostedUrl: string;
   redirectUri: string;
