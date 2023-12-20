@@ -3,8 +3,8 @@ import { GetUserToken, SetUserToken, SubmissionStates } from './common';
 
 export interface SchoologyOptions {
   schoologyProfileId: string;
-  requestToken: RequestToken;
-  accessToken: AccessToken;
+  requestToken?: RequestToken;
+  accessToken?: AccessToken;
   fxs: {
     cacheRequestToken?: () => void;
     getAccessToken?: GetUserToken;
