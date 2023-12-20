@@ -1,38 +1,24 @@
-import OAuth, { RequestToken, AccessToken } from './oauth';
+import { RequestToken, AccessToken } from './oauth';
+import { GetUserToken, SetUserToken, SubmissionStates } from './common';
 
-export = Schoology;
-
-interface Tokens {
-  accessToken: string;
-  refreshToken: string;
-  schoologyUserId: string;
+export interface SchoologyOptions {
+  schoologyProfileId: string;
+  requestToken?: RequestToken;
+  accessToken?: AccessToken;
+  fxs: {
+    cacheRequestToken?: (any) => Promise<any>;
+    getAccessToken?: GetUserToken;
+    setAccessToken?: SetUserToken;
+  };
+  hostedUrl: string;
+  redirectUri: string;
+  clientId: string;
+  clientSecret: string;
+  userId: string;
 }
 
-type GetUserToken = (userId: string) => Promise<Tokens>;
-type SetUserToken = (userId: string, tokens: Tokens) => Promise<void>;
-
-declare enum SubmissionStates {
-  SUBMITTED = 'submitted',
-  GRADED = 'graded',
-  UNSUBMITTED = 'unsubmitted',
-}
-
-declare class Schoology {
-  constructor(options: {
-    schoologyProfileId: string,
-    requestToken: RequestToken,
-    accessToken: AccessToken,
-    fxs: {
-      cacheRequestToken?: () => void,
-      getAccessToken?: GetUserToken,
-      setAccessToken?: SetUserToken,
-    },
-    hostedUrl: string;
-    redirectUri: string;
-    clientId: string;
-    clientSecret: string;
-    userId: string;
-  });
+export class Schoology {
+  constructor(options: SchoologyOptions);
 
   hostedUrl: string;
   redirectUri: string;
@@ -40,7 +26,7 @@ declare class Schoology {
   clientSecret: string;
   userId: string;
   schoologyProfileId: string;
-  cacheRequestToken: () => void;
+  cacheRequestToken: (any) => Promise<any>;
   getUserToken: GetUserToken; 
   setUserToken: SetUserToken;
   oAuth: OAuth;
@@ -49,7 +35,7 @@ declare class Schoology {
 
   build(): Promise<Schoology>;
   getAuthorizationURL(): string;
-  getAccessTokens(storeUserAccessTokens: boolean): Promise<any>;
+  getAccessTokens(storeUserAccessTokens?: boolean): Promise<any>;
   getProfile(): Promise<any>;
   getTokensFromUser(): Promise<void>;
   getCourses(): Promise<any[]>;

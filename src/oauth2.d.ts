@@ -1,4 +1,4 @@
-interface PostResponse {
+export interface PostResponse {
   status: string;
   data: any;
 }

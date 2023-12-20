@@ -1,16 +1,18 @@
 export interface RequestToken {
   token: string;
   secret: string;
-  expiresAt: Date;
+  // our own addition not in api
+  expiresAt?: Date;
 }
 
 export interface AccessToken {
   token: string;
   secret: string;
-  expiresAt: Date;
+  // our own addition not in api
+  expiresAt?: Date;
 }
 
-interface OAuthConfig {
+export interface OAuthConfig {
   consumerKey: string;
   consumerSecret: string;
   apiBase: string;
@@ -21,7 +23,7 @@ interface OAuthConfig {
   accessToken: AccessToken;
 }
 
-class OAuth {
+export class OAuth {
   constructor(config: OAuthConfig);
 
   static getTimeStamp(): number;
@@ -62,4 +64,3 @@ class OAuth {
   getOAuthHeader(): any;
 }
 
-export = OAuth;
