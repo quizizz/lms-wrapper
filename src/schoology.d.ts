@@ -35,7 +35,7 @@ export class Schoology {
 
   build(): Promise<Schoology>;
   getAuthorizationURL(): string;
-  getAccessTokens(storeUserAccessTokens: boolean): Promise<any>;
+  getAccessTokens(storeUserAccessTokens?: boolean): Promise<any>;
   getProfile(): Promise<any>;
   getTokensFromUser(): Promise<void>;
   getCourses(): Promise<any[]>;

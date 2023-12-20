@@ -3,7 +3,6 @@ import { RequestConfig } from './types';
 import { Tokens, GetUserToken, SetUserToken, SubmissionStates } from './common';
 
 export interface AuthURLOptions {
-  redirect_uri: string;
   state: string;
   scopes: string[];
 }
