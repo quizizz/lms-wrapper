@@ -1,7 +1,7 @@
 /**
  * @class GCL
  */
-export = GCL
+import { GetAccessToken, SetAccessToken } from "./common";
 class GCL {
     constructor(name: any, emitter: any, opts: any, urls?: {}, fxs?: {});
     name: any;
@@ -9,8 +9,8 @@ class GCL {
     apiURL: any;
     authURL: any;
     tokenURL: any;
-    getUserToken: any;
-    setUserToken: any;
+    getUserToken: GetAccessToken;
+    setUserToken: SetAccessToken;
     authClient: any;
     requestClient({ refresh_token, access_token, lastRefresh }: {
         refresh_token: any;
@@ -90,3 +90,4 @@ class GCL {
         subId: any;
     }): any;
 }
+export = GCL

@@ -223,8 +223,8 @@ class Canvas {
             }
             try {
               await this.refreshUserToken(this.refreshToken);
-            } catch (err) {
-              console.error(err);
+            } catch (err1) {
+              console.error(err1);
             }
 
             const resp = await this.makeRequest(requestConfig, retries + 1);

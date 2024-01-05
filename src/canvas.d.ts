@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios';
 import { RequestConfig } from './types';
-import { Tokens, GetUserToken, SetUserToken, SubmissionStates } from './common';
+import { Tokens, SubmissionStates, GetAccessToken, SetAccessToken } from './common';
 
 export interface AuthURLOptions {
   state: string;
@@ -36,7 +36,7 @@ export interface CanvasOptions {
   refreshToken?: string;
   clientId: string;
   clientSecret: string;
-  fxs: { getToken: GetUserToken, setToken: SetUserToken };
+  fxs: { getToken: GetAccessToken, setToken: SetAccessToken };
   userId: string;
   canvasUserId?: string;
 }
@@ -51,8 +51,8 @@ export class Canvas {
   refreshToken?: string;
   clientId: string;
   clientSecret: string;
-  getUserToken: GetUserToken;
-  setUserToken: SetUserToken;
+  getUserToken: GetAccessToken;
+  setUserToken: SetAccessToken;
   userId: string;
   canvasUserId: string;
 

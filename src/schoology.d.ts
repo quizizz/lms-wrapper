@@ -1,5 +1,5 @@
 import { RequestToken, AccessToken } from './oauth';
-import { GetUserToken, SetUserToken, SubmissionStates } from './common';
+import { SubmissionStates, Tokens } from './common';
 
 export interface SchoologyOptions {
   schoologyProfileId: string;
@@ -7,8 +7,8 @@ export interface SchoologyOptions {
   accessToken?: AccessToken;
   fxs: {
     cacheRequestToken?: (any) => Promise<any>;
-    getAccessToken?: GetUserToken;
-    setAccessToken?: SetUserToken;
+    getAccessToken?: SchoologyGetAccessToken;
+    setAccessToken?: SchoologySetAccessToken;
   };
   hostedUrl: string;
   redirectUri: string;
@@ -16,6 +16,9 @@ export interface SchoologyOptions {
   clientSecret: string;
   userId: string;
 }
+
+export type SchoologyGetAccessToken = () => Promise<Tokens>;
+export type SchoologySetAccessToken = (token: Tokens) => Promise<any>;
 
 export class Schoology {
   constructor(options: SchoologyOptions);
@@ -27,8 +30,8 @@ export class Schoology {
   userId: string;
   schoologyProfileId: string;
   cacheRequestToken: (any) => Promise<any>;
-  getUserToken: GetUserToken; 
-  setUserToken: SetUserToken;
+  getUserToken: SchoologyGetAccessToken; 
+  setUserToken: SchoologySetAccessToken;
   oAuth: OAuth;
 
   static SUBMISSION_STATE: SubmissionStates;

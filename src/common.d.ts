@@ -1,11 +1,15 @@
 export interface Tokens {
-  accessToken: string;
-  refreshToken: string;
-  canvasUserId: string;
+  access_token?: string,
+  access_token_secret?: string, 
+  token_type?: string, 
+  expires_in?: Number, 
+  refresh_token?: string,
+  lastRefresh?: Date,
+  info?: any,
 }
 
-export type GetUserToken = (userId: string) => Promise<Tokens>;
-export type SetUserToken = (userId: string, tokens: Tokens) => Promise<void>;
+export type GetAccessToken = (userId: string) => Promise<Tokens>;
+export type SetAccessToken = (userId: string, token: Tokens) => Promise<any>;
 
 export declare enum SubmissionStates {
   SUBMITTED = 'submitted',
