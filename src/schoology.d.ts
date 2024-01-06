@@ -17,8 +17,9 @@ export interface SchoologyOptions {
   userId: string;
 }
 
-export type SchoologyGetAccessToken = () => Promise<Tokens>;
-export type SchoologySetAccessToken = (token: Tokens) => Promise<any>;
+// The structure it works on is different, it uses the OAuth Token Structure
+export type SchoologyGetAccessToken = () => Promise<AccessToken>;
+export type SchoologySetAccessToken = (token: AccessToken) => Promise<any>;
 
 export class Schoology {
   constructor(options: SchoologyOptions);
