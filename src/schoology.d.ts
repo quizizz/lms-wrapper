@@ -6,7 +6,7 @@ export interface SchoologyOptions {
   requestToken?: RequestToken;
   accessToken?: AccessToken;
   fxs: {
-    cacheRequestToken?: (any) => Promise<any>;
+    cacheRequestToken?: (token: AccessToken) => Promise<any>;
     getAccessToken?: SchoologyGetAccessToken;
     setAccessToken?: SchoologySetAccessToken;
   };
