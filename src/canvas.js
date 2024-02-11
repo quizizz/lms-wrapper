@@ -91,12 +91,21 @@ class Canvas {
       const resp = await this.makeRequest({
         url: '/api/v1/users/self/profile',
         method: 'GET',
+        responseType: 'text',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      this.canvasUserId = resp.data.id;
-      return resp.data;
+
+      let parsedObject = JSON.parse(resp.data, function (key, value) {
+        // Convert 'id' to string
+        if (key === 'id') {
+          return value.toString();
+        }
+        return value;
+      });
+      this.canvasUserId = parsedObject.id;
+      return parsedObject;
     } catch (err) {
       throw new LMSError('Unable to fetch user profile', 'canvas.USER_PROFILE_ERROR', {
         userId: this.userId,
