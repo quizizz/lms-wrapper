@@ -10,11 +10,11 @@ exports.addWeeks = (date, week = 1) => {
   return moment(date.valueOf()).add(week, 'weeks').valueOf();
 };
 
-exports.paginatedCollect = async (lms, requestConfig) => {
+exports.paginatedCollect = async (lms, requestConfig, stringifyValues) => {
   const results = [];
   let page = 1;
   while (true) {
-    const result = await lms.makeRequest({
+    let result = await lms.makeRequest({
       query: { page, ...requestConfig.query },
       ...requestConfig,
     });
@@ -22,6 +22,9 @@ exports.paginatedCollect = async (lms, requestConfig) => {
       break;
     }
     page++;
+    if (stringifyValues) {
+      result = stringifyValues(result);
+    }
     if (Array.isArray(result.data)) {
       results.push(...result.data);
     } else {
