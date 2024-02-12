@@ -97,12 +97,12 @@ class Canvas {
         },
       });
 
-      console.log(`1 resp : ${this.userId}`, resp);
+      console.log(`1 resp : ${this.userId} ${resp.data}`);
 
       let parsedObject = JSON.parse(resp.data, function (key, value) {
         // Convert 'id' to string
         if (key === 'id') {
-          console.log(`2 found key id : ${this.userId}`, value);
+          console.log(`2 found key id : ${this.userId} ${value}`);
           return `${value}`;
         }
         return value;
@@ -119,9 +119,9 @@ class Canvas {
 
   async getTokensFromUser() {
     try {
-      const { accessToken, refreshToken, info } = await this.getUserToken(this.userId);
-      this.accessToken = accessToken;
-      this.refreshToken = refreshToken;
+      const { access_token, refresh_token, info } = await this.getUserToken(this.userId);
+      this.accessToken = access_token;
+      this.refreshToken = refresh_token;
       this.canvasUserId = info.id;
     } catch (err) {
       throw new LMSError('Unable to fetch tokens from user', 'canvas.TOKEN_FETCH_ERROR', {
