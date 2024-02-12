@@ -97,10 +97,13 @@ class Canvas {
         },
       });
 
+      console.log(`1 resp : ${this.userId}`, resp);
+
       let parsedObject = JSON.parse(resp.data, function (key, value) {
         // Convert 'id' to string
         if (key === 'id') {
-          return value.toString();
+          console.log(`2 found key id : ${this.userId}`, value);
+          return `${value}`;
         }
         return value;
       });
