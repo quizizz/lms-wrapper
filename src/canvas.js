@@ -92,6 +92,10 @@ class Canvas {
         url: '/api/v1/users/self/profile',
         method: 'GET',
         responseType: 'text',
+        transformResponse: [function (data) {
+          // Do not parse the data
+          return data;
+        }],
         headers: {
           'Content-Type': 'application/json',
         },
