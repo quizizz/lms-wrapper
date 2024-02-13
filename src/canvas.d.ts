@@ -60,7 +60,7 @@ export class Canvas {
 
   build(): Promise<Canvas>;
   getAuthorizationURL(options: AuthURLOptions): string;
-  getTokensFromCode(code: string): Promise<Tokens>;
+  getTokensFromCode(code: string): Promise<{ accessToken: string; refreshToken: string }>;
   handleError(err: Error, code: string, redirectUrl: string): void;
   isTokenExpired(err: Error): boolean;
   makeRequest(requestConfig: RequestConfig, retries?: number): Promise<AxiosResponse>;

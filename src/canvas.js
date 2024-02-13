@@ -43,6 +43,24 @@ class Canvas {
   }
 
   /**
+   * Pass complete axios response that is in text type
+   * @param response : complete axios response that is in text type
+   * @param keys : all the keys that need to be converted to string
+   * @returns : complete axios response
+   */
+  stringifyValues(response, keys) {
+    const keySet = new Set(keys);
+    const data = response.data;
+    response.data = JSON.parse(data, (key, value) => {
+      if (keySet.has(key)) {
+        return value.toString();
+      }
+      return value;
+    });
+    return response;
+  }
+
+  /**
    * Returns a URL used to initiate the authorization process with Canvas and fetch
    * the authorization code
    */
@@ -78,8 +96,8 @@ class Canvas {
         },
       });
 
-      this.accessToken = resp.data.access_token;
-      this.refreshToken = resp.data.refresh_token;
+      this.accessToken = resp.data.access_token || this.accessToken;
+      this.refreshToken = resp.data.refresh_token || this.refreshToken;
       return { accessToken: this.accessToken, refreshToken: this.refreshToken };
     } catch (err) {
       this.handleError(err, code);
@@ -91,12 +109,19 @@ class Canvas {
       const resp = await this.makeRequest({
         url: '/api/v1/users/self/profile',
         method: 'GET',
+        responseType: 'text',
+        transformResponse: [function (data) {
+          // Do not parse the data
+          return data;
+        }],
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      this.canvasUserId = resp.data.id;
-      return resp.data;
+      const response = this.stringifyValues(resp, ['id']);
+
+      this.canvasUserId = response.data.id;
+      return response.data;
     } catch (err) {
       throw new LMSError('Unable to fetch user profile', 'canvas.USER_PROFILE_ERROR', {
         userId: this.userId,
@@ -107,9 +132,9 @@ class Canvas {
 
   async getTokensFromUser() {
     try {
-      const { accessToken, refreshToken, info } = await this.getUserToken(this.userId);
-      this.accessToken = accessToken;
-      this.refreshToken = refreshToken;
+      const { access_token, refresh_token, info } = await this.getUserToken(this.userId);
+      this.accessToken = access_token;
+      this.refreshToken = refresh_token;
       this.canvasUserId = info.id;
     } catch (err) {
       throw new LMSError('Unable to fetch tokens from user', 'canvas.TOKEN_FETCH_ERROR', {
@@ -244,6 +269,18 @@ class Canvas {
     const courses = await paginatedCollect(this, {
       url: '/api/v1/courses',
       method: 'GET',
+      responseType: 'text',
+      transformResponse: [
+        function (data) {
+          // Do not parse the data
+          return data;
+        },
+      ],
+    }, (resp) => {
+      return this.stringifyValues(resp, [
+        'account_id',
+        'root_account_id',
+      ]);
     });
     return courses;
   }
@@ -266,7 +303,16 @@ class Canvas {
     const students = await paginatedCollect(this, {
       url: `/api/v1/courses/${courseId}/users`,
       method: 'GET',
+      responseType: 'text',
+      transformResponse: [
+        function (data) {
+          // Do not parse the data
+          return data;
+        },
+      ],
       data: { 'enrollment_type': ['student'] },
+    }, (resp) => {
+      return this.stringifyValues(resp, ['id']);
     });
     return students;
   }
@@ -349,16 +395,34 @@ class Canvas {
   }
 
   async getSubmission({ courseId, assignmentId, studentCanvasId }) {
-    const { data: submission } = await this.makeRequest({
+    const res = await this.makeRequest({
       url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentCanvasId}`,
       method: 'GET',
+      responseType: 'text',
+      transformResponse: [
+        function (data) {
+          // Do not parse the data
+          return data;
+        },
+      ],
     });
-    return submission;
+
+    const response = this.stringifyValues(res, ['user_id']);
+    return response.data;
   }
 
   async listSubmissions({ courseId, assignmentId }) {
     const submissions = await paginatedCollect(this, {
       url: `api/v1/courses/${courseId}/assignments/${assignmentId}/submissions`,
+      responseType: 'text',
+      transformResponse: [
+        function (data) {
+          // Do not parse the data
+          return data;
+        },
+      ],
+    }, (resp) => {
+      return this.stringifyValues(resp, ['user_id']);
     });
     return submissions;
   }
@@ -381,6 +445,15 @@ class Canvas {
     const accounts = await paginatedCollect(this, {
       url: '/api/v1/manageable_accounts',
       method: 'GET',
+      responseType: 'text',
+      transformResponse: [
+        function (data) {
+          // Do not parse the data
+          return data;
+        },
+      ],
+    }, (resp) => {
+      return this.stringifyValues(resp, ['id']);
     });
     return accounts;
   }
@@ -392,7 +465,16 @@ class Canvas {
     const users = await paginatedCollect(this, {
       url: `/api/v1/accounts/${id}/users`,
       method: 'GET',
+      responseType: 'text',
+      transformResponse: [
+        function (d) {
+          // Do not parse the data
+          return d;
+        },
+      ],
       data,
+    }, (resp) => {
+      return this.stringifyValues(resp, ['id']);
     });
     return users;
   }
@@ -402,12 +484,20 @@ class Canvas {
       const resp = await this.makeRequest({
         url: `/api/v1/users/${id}/profile`,
         method: 'GET',
+        responseType: 'text',
+        transformResponse: [
+          function (data) {
+            // Do not parse the data
+            return data;
+          },
+        ],
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      this.canvasUserId = resp.data.id;
-      return resp.data;
+      const response = this.stringifyValues(resp, ['id']);
+      this.canvasUserId = response.data.id;
+      return response.data;
     } catch (err) {
       throw new LMSError('Unable to fetch user profile', 'canvas.USER_PROFILE_ERROR', {
         userId: this.userId,
