@@ -43,24 +43,6 @@ class Canvas {
   }
 
   /**
-   * Pass complete axios response that is in text type
-   * @param response : complete axios response that is in text type
-   * @param keys : all the keys that need to be converted to string
-   * @returns : complete axios response
-   */
-  stringifyValues(response, keys) {
-    const keySet = new Set(keys);
-    const data = response.data;
-    response.data = JSON.parse(data, (key, value) => {
-      if (keySet.has(key)) {
-        return value.toString();
-      }
-      return value;
-    });
-    return response;
-  }
-
-  /**
    * Returns a URL used to initiate the authorization process with Canvas and fetch
    * the authorization code
    */
@@ -106,19 +88,25 @@ class Canvas {
 
   async getProfile() {
     try {
-      const resp = await this.makeRequest({
+      const response = await this.makeRequest({
         url: '/api/v1/users/self/profile',
         method: 'GET',
         responseType: 'text',
-        transformResponse: [function (data) {
-          // Do not parse the data
-          return data;
-        }],
+        transformResponse: [
+          (data) => {
+            const pattern = ['id'].join('|');
+
+            return data.replace(
+              new RegExp(`("(${pattern})":\\s*)(\\d+)`, 'g'),
+              '$1"$3"',
+            );
+          },
+        ],
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      const response = this.stringifyValues(resp, ['id']);
+      response.data = JSON.parse(response.data);
 
       this.canvasUserId = response.data.id;
       return response.data;
@@ -271,16 +259,18 @@ class Canvas {
       method: 'GET',
       responseType: 'text',
       transformResponse: [
-        function (data) {
-          // Do not parse the data
-          return data;
+        (data) => {
+          const pattern = ['account_id', 'root_account_id'].join('|');
+
+          return data.replace(
+            new RegExp(`("(${pattern})":\\s*)(\\d+)`, 'g'),
+            '$1"$3"',
+          );
         },
       ],
     }, (resp) => {
-      return this.stringifyValues(resp, [
-        'account_id',
-        'root_account_id',
-      ]);
+      resp.data = JSON.parse(resp.data);
+      return resp;
     });
     return courses;
   }
@@ -305,14 +295,19 @@ class Canvas {
       method: 'GET',
       responseType: 'text',
       transformResponse: [
-        function (data) {
-          // Do not parse the data
-          return data;
+        (data) => {
+          const pattern = ['id'].join('|');
+
+          return data.replace(
+            new RegExp(`("(${pattern})":\\s*)(\\d+)`, 'g'),
+            '$1"$3"',
+          );
         },
       ],
       data: { 'enrollment_type': ['student'] },
     }, (resp) => {
-      return this.stringifyValues(resp, ['id']);
+      resp.data = JSON.parse(resp.data);
+      return resp;
     });
     return students;
   }
@@ -395,19 +390,23 @@ class Canvas {
   }
 
   async getSubmission({ courseId, assignmentId, studentCanvasId }) {
-    const res = await this.makeRequest({
+    const response = await this.makeRequest({
       url: `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentCanvasId}`,
       method: 'GET',
       responseType: 'text',
       transformResponse: [
-        function (data) {
-          // Do not parse the data
-          return data;
+        (data) => {
+          const pattern = ['user_id'].join('|');
+
+          return data.replace(
+            new RegExp(`("(${pattern})":\\s*)(\\d+)`, 'g'),
+            '$1"$3"',
+          );
         },
       ],
     });
 
-    const response = this.stringifyValues(res, ['user_id']);
+    response.data = JSON.parse(response.data);
     return response.data;
   }
 
@@ -416,13 +415,18 @@ class Canvas {
       url: `api/v1/courses/${courseId}/assignments/${assignmentId}/submissions`,
       responseType: 'text',
       transformResponse: [
-        function (data) {
-          // Do not parse the data
-          return data;
+        (data) => {
+          const pattern = ['user_id'].join('|');
+
+          return data.replace(
+            new RegExp(`("(${pattern})":\\s*)(\\d+)`, 'g'),
+            '$1"$3"',
+          );
         },
       ],
     }, (resp) => {
-      return this.stringifyValues(resp, ['user_id']);
+      resp.data = JSON.parse(resp.data);
+      return resp;
     });
     return submissions;
   }
@@ -447,13 +451,18 @@ class Canvas {
       method: 'GET',
       responseType: 'text',
       transformResponse: [
-        function (data) {
-          // Do not parse the data
-          return data;
+        (data) => {
+          const pattern = ['id'].join('|');
+
+          return data.replace(
+            new RegExp(`("(${pattern})":\\s*)(\\d+)`, 'g'),
+            '$1"$3"',
+          );
         },
       ],
     }, (resp) => {
-      return this.stringifyValues(resp, ['id']);
+      resp.data = JSON.parse(resp.data);
+      return resp;
     });
     return accounts;
   }
@@ -467,35 +476,44 @@ class Canvas {
       method: 'GET',
       responseType: 'text',
       transformResponse: [
-        function (d) {
-          // Do not parse the data
-          return d;
+        (data1) => {
+          const pattern = ['id'].join('|');
+
+          return data1.replace(
+            new RegExp(`("(${pattern})":\\s*)(\\d+)`, 'g'),
+            '$1"$3"',
+          );
         },
       ],
       data,
     }, (resp) => {
-      return this.stringifyValues(resp, ['id']);
+      resp.data = JSON.parse(resp.data);
+      return resp;
     });
     return users;
   }
 
   async getUserProfile(id) {
     try {
-      const resp = await this.makeRequest({
+      const response = await this.makeRequest({
         url: `/api/v1/users/${id}/profile`,
         method: 'GET',
         responseType: 'text',
         transformResponse: [
-          function (data) {
-            // Do not parse the data
-            return data;
+          (data) => {
+            const pattern = ['id'].join('|');
+
+            return data.replace(
+              new RegExp(`("(${pattern})":\\s*)(\\d+)`, 'g'),
+              '$1"$3"',
+            );
           },
         ],
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      const response = this.stringifyValues(resp, ['id']);
+      response.data = JSON.parse(response.data);
       this.canvasUserId = response.data.id;
       return response.data;
     } catch (err) {
